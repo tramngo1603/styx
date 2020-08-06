@@ -6,10 +6,13 @@ let win
 function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({
-      minWidth: 800, 
+      minWidth: 800,
       minHeight: 600,
-      width: 800, 
+      width: 800,
       height: 600,
+      webPreferences: {
+            nodeIntegration: true
+        }
   })
 
   // and load the index.html of the app.
