@@ -4,18 +4,20 @@ body {
     font-family: sans-serif;
 }
 .top-bar {
-    max-width: 100%;
-    padding: 20px;
+    max-width: 150px auto;
+    padding: 10px;
     background-color: #303030;
 }
 .button-grp {
     display: inline-block;
     margin-right: 30px;
 }
+
+
 .button-grp button {
     border: 1px #DBDBDB solid;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 12px;
     background-color: #F8F8F8;
     outline: none;
     color: #575757;
@@ -34,13 +36,14 @@ button[disabled]{
     color: white !important;
 }
 .main-window {
-    display: grid;
-    grid-template-columns: 200px auto;
+    /* display: grid;
+    grid-template-columns: 150px auto; */
     width: 100%;
     height: calc(100vh - 70px);
 }
 .sidebar {
-    background-color: #555555;
+    background-color: #258193;
+
     height: 100%;
 }
 .sidebar_title {
@@ -75,22 +78,28 @@ button[disabled]{
     height: calc(100vh - 110px);
     overflow: scroll;
 }
+
 .single-item {
     display: inline-block;
     text-align: center;
-    width: 96px;
+    width: 120px;
+    height: 50px;
+    /* margin-bottom: 10px; */
 }
 .folder {
     font-size: 48px;
     line-height: 1px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    width: 72px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-right: 0px;
+    padding: 0 0;
+    width: 100px;
 }
+
 .folder_desc {
     text-align: center;
-    font-size: 14px;
-    width: 72px;
+    font-size: 12px;
+    width: 100px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -99,8 +108,17 @@ button[disabled]{
 .blue {
     color: #6CCCF6;
 }
+
 .file {
     color: #D8D8D8;
+}
+
+/* h1.folder.file {
+  height: 35px
+} */
+
+i.fas.fa-file::before {
+  height: 25px !important
 }
 .red {
     color: red

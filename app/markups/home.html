@@ -14,30 +14,49 @@
             <button id="back"><i class="fas fa-angle-left"></i></button>
             <button id="forward"><i class="fas fa-angle-right"></i></button>
         </div>
-        <div title="Show items as icons or in a list" class="button-grp">
+        <!-- <div title="Show items as icons or in a list" class="button-grp">
             <button id="iconView" class="active-btn"><i class="fas fa-th"></i></button>
             <button id="listView"><i class="fas fa-list"></i></button>
-        </div>
+        </div> -->
     </div>
     <div class="main-window">
-        <div class="sidebar">
+
+      <button style="margin-right: 100px">back</button>
+      <i class="fas fa-home"><input value="/"></input></i>
+
+        <!-- <div class="sidebar">
             <h3 class="sidebar_title">Navigate</h3>
             <ul class="sidebar_links">
                 <li id="Home" class="active_link"><i class="fas fa-home"></i>&emsp;Home</li>
-                <li id="Downloads"><i class="fas fa-arrow-circle-down"></i>&emsp;Downloads</li>
-                <li id="Documents"><i class="fas fa-file"></i>&emsp;Documents</li>
-                <li id="Pictures"><i class="fas fa-images"></i>&emsp;Pictures</li>
-                <li id="Movies"><i class="fas fa-video"></i>&emsp;Movies</li>
-                <li id="root"><i class="fas fa-square-root-alt"></i>&emsp;Root</li>
+                <li id="Downloads"><i class="fa fa-folder"></i>&emsp;Code</li>
+                <li id="Documents"><i class="fa fa-folder"></i>&emsp;Primary</li>
+                <li id="Pictures"><i class="fa fa-folder"></i>&emsp;Docs</li>
+                <li id="Movies"><i class="fa fa-folder"></i>&emsp;Sources</li>
+                <li id="root"><i class="fa fa-folder"></i>&emsp;Protocol</li>
+                <li id="derivatives"><i class="fa fa-folder"></i>&emsp;Derivatives</li>
+
             </ul>
-        </div>
+        </div> -->
         <div class="window">
-            <div id="items">
-                
+            <div id="items" style="width:100%;height: 100%" ondrop="drop(event);" ondragover="allowDrop(event);">
+
             </div>
         </div>
     </div>
     <script>window.$ = window.jQuery = require('jquery');</script>
     <script src="../scripts/command.js"></script>
+    <script>
+            function allowDrop(ev) {
+              ev.preventDefault();
+            }
+
+            function drop(ev) {
+              ev.preventDefault();
+              var appendString = '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div contenteditable="true" class="folder_desc">'+ev.dataTransfer.files[0].name+'</div></div>'
+
+              $(appendString).appendTo(ev.target);
+            }
+
+    </script>
 </body>
 </html>
