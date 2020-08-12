@@ -2,14 +2,9 @@ var cmd = require('node-cmd');
 let os = require('os')
 var pathlib = require('path')
 var fs = require('fs');
-// const ipcMain = require('electron').ipcMain;
-// const {dialog, BrowserWindow } = require('electron')
-// const path = require('path')
 
-// var homedir = os.userInfo().homedir
 var backFolder = []
 var forwardFolder =[]
-// checkForFolderHistory()
 
 var jsonObjGlobal = {
   "code": {
@@ -37,9 +32,29 @@ const backButton = document.getElementById("button-back")
 const addFiles = document.getElementById("add-files")
 const addNewFolder = document.getElementById("add-folders")
 
+function loadFileFolder(myPath) {
+  var appendString = ""
+  for (var item in myPath) {
+    if (!myPath[item]) {
+      appendString = appendString + '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+    }
+    else {
+      appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+    }
+  }
+  return appendString
+}
+
+function getRecursivePath(filteredList) {
+  var myPath = jsonObjGlobal;
+  for (var item of filteredList) {
+    myPath = myPath[item]
+  }
+  return myPath
+}
+
 /// back button
 backButton.addEventListener("click", function() {
-  console.log("after Back:" + globalPath.value)
   event.preventDefault();
   var currentPath = globalPath.value
   var jsonPathArray = currentPath.split("/")
@@ -53,16 +68,8 @@ backButton.addEventListener("click", function() {
     myPath = myPath[item]
   }
 
-  var appendString = ""
-  for (var item in myPath) {
-    if (!myPath[item]) {
-      appendString = appendString + '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
-    }
-    else {
-      // folderID = folder + "-" + item
-      appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
-    }
-  }
+  // construct UI with files and folders
+  var appendString = loadFileFolder(myPath)
 
   /// empty the div
   $('#items').empty()
@@ -89,16 +96,11 @@ addNewFolder.addEventListener("click", function(event) {
     return el != "";
   });
 
-  // console.log(appendString)
+  var myPath = getRecursivePath(filtered)
+
+  // update Json object with new folder created
   var renamedNewFolder = "New folder"
-
-  var myPath = jsonObjGlobal;
-  for (var item of filtered) {
-    myPath = myPath[item]
-  }
-
   myPath[renamedNewFolder] = {}
-  console.log(jsonObjGlobal)
 })
 
 //  rename
@@ -111,7 +113,6 @@ function renameFolder(renamedNewFolder) {
   }
 
   myPath[renamedNewFolder] = {}
-  console.log(jsonObjGlobal)
 }
 
 //
@@ -127,20 +128,6 @@ function renameFolder(renamedNewFolder) {
 // /////
 
 listItems(jsonObjGlobal)
-//
-// function loadpath(jsonObj) {
-//   listItems(jsonObj);
-// }
-
-//
-// function checkForFolderHistory() {
-//     if(backFolder.length === 0) {
-//         $('#back').prop('disabled', true)
-//     }
-//     if(forwardFolder.length === 0) {
-//         $('#forward').prop('disabled', true)
-//     }
-// }
 
 function allowDrop(ev) {
   ev.preventDefault();
@@ -170,10 +157,9 @@ function drop(ev) {
         var filtered = jsonPathArray.filter(function (el) {
           return el != "";
         });
-        var myPath = jsonObjGlobal;
-        for (var item of filtered) {
-          myPath = myPath[item]
-        }
+
+        var myPath = getRecursivePath(filtered)
+
         myPath[ev.dataTransfer.files[0].name] = ev.dataTransfer.files[0].path
         var myspan = "<span style='display: none' id='myspan'>' + ev.dataTransfer.files[0].path + '</span>"
         var appendString = '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+ev.dataTransfer.files[0].name+'</div></div>'
@@ -194,10 +180,8 @@ function getInFolder() {
   $('.single-item').dblclick(function(){
     if($(this).children("h1").hasClass("blue")) {
       var folder = this.id
-      // var folderID = ''
       var appendString = ''
       globalPath.value = globalPath.value + folder + "/"
-      console.log(globalPath.value)
 
       var currentPath = globalPath.value
       var jsonPathArray = currentPath.split("/")
@@ -205,33 +189,19 @@ function getInFolder() {
         return el != "";
       });
 
-      console.log(filtered)
-      var myPath = jsonObjGlobal;
-      for (var item of filtered) {
-        myPath = myPath[item]
-      }
+      var myPath = getRecursivePath(filtered)
 
-      for (var item in myPath) {
-        console.log(item)
-        if (!myPath[item]) {
-          appendString = appendString + '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
-        }
-        else {
-          // folderID = folder + "-" + item
-          appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
-        }
-
-      }
+      var appendString = loadFileFolder(myPath)
 
       $('#items').empty()
       $('#items').html(appendString)
 
-
+      // reconstruct folders and files (child elements after emptying the Div)
       listItems(myPath)
       getInFolder()
 
     } else {
-      alert("Please click on a folder to explore!")
+        alert("Please click on a folder to explore!")
     }
   })
 }
@@ -258,10 +228,13 @@ function listItems(jsonObj) {
         $('#items').empty()
         $('#items').html(appendString)
 
-
-        // $('div.folder_desc').dblclick(function(){
-        //     if($(this).children("h1").hasClass("blue")) {
-        //         $('.folder_desc').attr('contenteditable','true');
-        //     }
-        //   })
   }
+
+  /// Rename a file
+function renameFile() {
+  $('div.folder_desc').dblclick(function(){
+        if($(this).children("h1").hasClass("blue")) {
+              $('.folder_desc').attr('contenteditable','true');
+          }
+      })
+}
