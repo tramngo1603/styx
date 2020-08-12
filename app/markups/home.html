@@ -14,56 +14,29 @@
             <button id="back"><i class="fas fa-angle-left"></i></button>
             <button id="forward"><i class="fas fa-angle-right"></i></button>
         </div>
-        <!-- <div title="Show items as icons or in a list" class="button-grp">
-            <button id="iconView" class="active-btn"><i class="fas fa-th"></i></button>
-            <button id="listView"><i class="fas fa-list"></i></button>
-        </div> -->
     </div>
     <div class="main-window">
+      <div style="margin-top: 10px">
+        <button id="button-back" style="margin-right: 50px">Back</button>
+        <button id="add-folders">Add folder</button>
+        <button id="add-files" style="margin-right: 50px">Add files</button>
+        <i class="fas fa-home"><input id="input-global-path" value="/"></input></i>
+      </div>
 
-      <button style="margin-right: 100px">back</button>
-      <i class="fas fa-home"><input value="/"></input></i>
 
         <div class="window">
             <div id="items" style="width:100%;height: 100%" ondrop="drop(event);" ondragover="allowDrop(event);">
-
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Code</div></div>
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Primary</div></div>
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Protocols</div></div>
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Source</div></div>
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Docs</div></div>
+                '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Derivatives</div></div>
             </div>
         </div>
     </div>
     <script>window.$ = window.jQuery = require('jquery');</script>
     <script src="../scripts/command.js"></script>
-    <script>
-            function allowDrop(ev) {
-              ev.preventDefault();
-            }
 
-            function drop(ev) {
-              ev.preventDefault();
-              var itemName = ev.dataTransfer.files[0].name
-              var itemType = ev.dataTransfer.types
-              var duplicate = false
-
-              // check for duplicate or files with the same name
-              for (var i=0; i<ev.target.children.length;i++) {
-                if (itemName === ev.target.children[i].innerText) {
-                  duplicate = true
-                  break
-                }
-              }
-
-              /// check for File, not allowed Folder drag and drop for now
-              if (itemType[0] === "Files") {
-                if (duplicate) {
-                  alert('Duplicate file name!')
-                } else {
-                    var appendString = '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div contenteditable="true" class="folder_desc">'+ev.dataTransfer.files[0].name+'</div></div>'
-                    $(appendString).appendTo(ev.target);
-                }
-              } else {
-                  alert('Folders are not allowed to be dropped in this area!')
-              }
-            }
-
-    </script>
 </body>
 </html>

@@ -82,10 +82,22 @@ button[disabled]{
 .single-item {
     display: inline-block;
     text-align: center;
-    width: 120px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #c0c0c0;
+    margin-right: 10px;
+    margin-top: 10px;
     /* margin-bottom: 10px; */
 }
+
+.single-item:hover + #myspan {
+  display: block;
+}
+
+i.fas.fa-file {
+  height: 37px !important
+}
+
 .folder {
     font-size: 48px;
     line-height: 1px;
@@ -117,9 +129,9 @@ button[disabled]{
   height: 35px
 } */
 
-i.fas.fa-file::before {
+/* i.fas.fa-file::before {
   height: 25px !important
-}
+} */
 .red {
     color: red
 }
