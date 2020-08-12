@@ -2,6 +2,7 @@ var cmd = require('node-cmd');
 let os = require('os')
 var pathlib = require('path')
 var fs = require('fs');
+var $ = require('jquery')
 
 var backFolder = []
 var forwardFolder =[]
@@ -31,6 +32,62 @@ const globalPath = document.getElementById("input-global-path")
 const backButton = document.getElementById("button-back")
 const addFiles = document.getElementById("add-files")
 const addNewFolder = document.getElementById("add-folders")
+const contextMenu = document.getElementById("mycontext")
+
+
+let menu = null;
+document.addEventListener('DOMContentLoaded', function(){
+    //make sure the right click menu is hidden
+    menu = document.querySelector('.menu');
+    // menu.classList.add('off');
+
+    //add the right click listener to the box
+    let items = document.querySelectorAll('.single-item');
+
+    for (var i = 0; i < items.length; i++) {
+        items[i].addEventListener('contextmenu', showmenu, false);
+    }
+
+    //add a listener for leaving the menu and hiding it
+    menu.addEventListener('mouseleave', hidemenu);
+
+    //add the listeners for the menu items
+    addMenuListeners();
+});
+
+function addMenuListeners(){
+    document.getElementById('rename').addEventListener('click', function() {
+      var itemID = $(this).id
+      setColour(event);
+    })
+    document.getElementById('delete').addEventListener('click', setColour);
+}
+
+function setColour(ev){
+    hidemenu();
+    let clr = ev.target.id;
+    if (clr === "rename") {
+      console.log($(this).attr('id'))
+      document.getElementById('input-global-path').style.backgroundColor = "green";
+    } else {
+      document.getElementById('input-global-path').style.backgroundColor = "red";
+    }
+}
+
+function showmenu(ev){
+    //stop the real right click menu
+    ev.preventDefault();
+    //show the custom menu
+    menu.style.top = `${ev.clientY - 10}px`;
+    menu.style.left = `${ev.clientX + 15}px`;
+    menu.classList.remove('off');
+}
+
+function hidemenu(ev){
+    menu.classList.add('off');
+    menu.style.top = '129px';
+    menu.style.left = '93px';
+}
 
 function loadFileFolder(myPath) {
   var appendString = ""

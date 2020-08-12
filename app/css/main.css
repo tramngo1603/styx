@@ -73,11 +73,51 @@ button[disabled]{
 .active_link {
     background-color: #252525;
 }
+
 .window {
     padding: 20px;
     height: calc(100vh - 110px);
     overflow: scroll;
 }
+
+.menu {
+    width: 70px;
+    height: 45px;
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #aaa;
+    box-shadow: 2px 2px 2px #999;
+    border-radius: 3px;
+    list-style: none;
+    position: absolute;
+    padding: 5px 5px;
+}
+
+.menu.off{
+    top: -200%;
+    left: -200%;
+}
+
+.menu-item{
+    height: 20px;
+    line-height: 1.2;
+    font-size: 12px;
+    /* font-weight: 100; */
+    padding: 1px 1px;
+    cursor: pointer;
+    text-align: left;
+    margin:0;
+    /* padding:5px 10px; */
+    text-decoration:none;
+}
+
+.menu-item:hover,
+.menu-item:active{
+    color: #000;
+    background-color: #E0E0E0;
+    font-weight: 400;
+}
+
 
 .single-item {
     display: inline-block;
