@@ -119,7 +119,11 @@ backButton.addEventListener("click", function() {
     return el != "";
   });
 
-  globalPath.value = "/" + filtered.slice(0,filtered.length-1).join("/")
+  if (filtered.length === 1) {
+    globalPath.value = "/"
+  } else {
+    globalPath.value = "/" + filtered.slice(0,filtered.length-1).join("/") + "/"
+  }
   var myPath = jsonObjGlobal;
   for (var item of filtered.slice(0,filtered.length-1)) {
     myPath = myPath[item]
@@ -136,28 +140,54 @@ backButton.addEventListener("click", function() {
   listItems(myPath)
   getInFolder()
   event.preventDefault();
+  // console.log("Current path: " + globalPath.value)
 })
 
 // Add folder button
 addNewFolder.addEventListener("click", function(event) {
   event.preventDefault();
-  var appendString = '';
-  // var folderID = '';
-  appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">New folder</div></div>'
-  $(appendString).appendTo('#items');
 
-  /// update jsonObjGlobal
-  var currentPath = globalPath.value
-  var jsonPathArray = currentPath.split("/")
-  var filtered = jsonPathArray.filter(function (el) {
-    return el != "";
-  });
+  var newFolderName = "New Folder"
+  // show input box for name
+  const prompt = require('electron-prompt');
 
-  var myPath = getRecursivePath(filtered)
+  prompt({
+      title: 'Adding a new folder...',
+      label: 'Enter a name for the new folder:',
+      value: 'New folder',
+      inputAttrs: {
+          type: 'text'
+      },
+      type: 'input'
+  })
+  .then((r) => {
+      if(r !== null) {
+        newFolderName = r
+      }
+      var appendString = '';
+      // var folderID = '';
+      appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">'+ newFolderName +'</div></div>'
+      $(appendString).appendTo('#items');
 
-  // update Json object with new folder created
-  var renamedNewFolder = "New folder"
-  myPath[renamedNewFolder] = {}
+      /// update jsonObjGlobal
+      var currentPath = globalPath.value
+      var jsonPathArray = currentPath.split("/")
+      var filtered = jsonPathArray.filter(function (el) {
+        return el != "";
+      });
+
+      var myPath = getRecursivePath(filtered)
+      console.log(myPath)
+
+      // update Json object with new folder created
+      var renamedNewFolder = newFolderName
+      myPath[renamedNewFolder] = {}
+
+      listItems(myPath)
+      getInFolder()
+    })
+
+  .catch(console.error);
 })
 
 //  rename
@@ -260,6 +290,7 @@ function getInFolder() {
     } else {
         alert("Please click on a folder to explore!")
     }
+    console.log("Current path: " + globalPath.value)
   })
 }
 
