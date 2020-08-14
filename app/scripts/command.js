@@ -244,8 +244,9 @@ function drop(ev) {
 
         var myPath = getRecursivePath(filtered)
 
-        myPath[ev.dataTransfer.files[0].name] = ev.dataTransfer.files[0].path
-        var myspan = "<span style='display: none' id='myspan'>' + ev.dataTransfer.files[0].path + '</span>"
+// ev.dataTransfer.files[0].path
+        myPath[ev.dataTransfer.files[0].name] = null
+        // var myspan = "<span style='display: none' id='myspan'>' + ev.dataTransfer.files[0].path + '</span>"
         var appendString = '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+ev.dataTransfer.files[0].name+'</div></div>'
         $(appendString).appendTo(ev.target);
     }
