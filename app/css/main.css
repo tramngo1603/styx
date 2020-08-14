@@ -12,7 +12,19 @@ body {
     display: inline-block;
     margin-right: 30px;
 }
+/*
+#add-folders:hover{
+  background-color: #258193;
+  border: none;
+  color: white;
+} */
 
+.add-button:focus {
+  background-color: #258193;
+  border: none;
+  color: white;
+  
+}
 
 .button-grp button {
     border: 1px #DBDBDB solid;

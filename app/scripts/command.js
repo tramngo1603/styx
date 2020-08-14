@@ -39,7 +39,7 @@ let menu = null;
 document.addEventListener('DOMContentLoaded', function(){
     //make sure the right click menu is hidden
     menu = document.querySelector('.menu');
-    // menu.classList.add('off');
+    menu.classList.add('off');
 
     //add the right click listener to the box
     let items = document.querySelectorAll('.single-item');
@@ -56,10 +56,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 function addMenuListeners(){
-    document.getElementById('rename').addEventListener('click', function() {
-      var itemID = $(this).id
-      setColour(event);
-    })
+    document.getElementById('rename').addEventListener('click', setColour)
     document.getElementById('delete').addEventListener('click', setColour);
 }
 
@@ -67,7 +64,7 @@ function setColour(ev){
     hidemenu();
     let clr = ev.target.id;
     if (clr === "rename") {
-      console.log($(this).attr('id'))
+
       document.getElementById('input-global-path').style.backgroundColor = "green";
     } else {
       document.getElementById('input-global-path').style.backgroundColor = "red";
