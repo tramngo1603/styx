@@ -23,7 +23,7 @@ body {
   background-color: #258193;
   border: none;
   color: white;
-  
+
 }
 
 .button-grp button {
@@ -108,6 +108,7 @@ button[disabled]{
 .menu.off{
     top: -200%;
     left: -200%;
+    display: none;
 }
 
 .menu-item{
@@ -163,11 +164,14 @@ i.fas.fa-file {
 .folder_desc {
     text-align: center;
     font-size: 12px;
-    width: 100px;
+    max-width: 100px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     -webkit-user-select: none;
+    padding: 0px 4px 0px 4px;
+    word-wrap: break-word;
+    line-height: 1.5;
 }
 .blue {
     color: #6CCCF6;

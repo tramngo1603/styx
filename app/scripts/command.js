@@ -2,7 +2,8 @@ var cmd = require('node-cmd');
 let os = require('os')
 var pathlib = require('path')
 var fs = require('fs');
-var $ = require('jquery')
+var $ = require('jquery');
+const prompt = require('electron-prompt');
 
 var backFolder = []
 var forwardFolder =[]
@@ -34,50 +35,81 @@ const addFiles = document.getElementById("add-files")
 const addNewFolder = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
 
-
 let menu = null;
-document.addEventListener('DOMContentLoaded', function(){
-    //make sure the right click menu is hidden
-    menu = document.querySelector('.menu');
-    menu.classList.add('off');
+menu = document.querySelector('.menu');
+menu.classList.add('off');
 
-    //add the right click listener to the box
-    let items = document.querySelectorAll('.single-item');
+function myFunction(event) {
 
-    for (var i = 0; i < items.length; i++) {
-        items[i].addEventListener('contextmenu', showmenu, false);
-    }
+  event.addEventListener('contextmenu', showmenu, false)
+  menu.addEventListener('mouseleave', hidemenu);
 
-    //add a listener for leaving the menu and hiding it
-    menu.addEventListener('mouseleave', hidemenu);
-
-    //add the listeners for the menu items
-    addMenuListeners();
-});
-
-function addMenuListeners(){
-    document.getElementById('rename').addEventListener('click', setColour)
-    document.getElementById('delete').addEventListener('click', setColour);
+  onClickMenu(event)
 }
 
-function setColour(ev){
-    hidemenu();
-    let clr = ev.target.id;
-    if (clr === "rename") {
+// function contextMenuActions(event) {}
 
-      document.getElementById('input-global-path').style.backgroundColor = "green";
-    } else {
-      document.getElementById('input-global-path').style.backgroundColor = "red";
+function onClickMenu(parentEvent) {
+  menu.addEventListener("click", function() {
+    if (event.target.id === "rename") {
+      renameFolder(parentEvent)
+    } else if (event.target.id === "delete") {
+      delFolder(parentEvent)
     }
+  })
+}
+
+function renameFolder(event1) {
+  var currentFolderName = event1.children[1].innerText
+
+  // show input box for new name
+  prompt({
+    title: 'Renaming folder '+ currentFolderName +': ...',
+    label: 'Enter a new name:',
+    value: currentFolderName,
+    inputAttrs: {
+      type: 'text'
+    },
+    type: 'input'
+  })
+  .then((r) => {
+    if(r !== null && r!== "") {
+      var newName = r
+      event1.children[1].innerText = newName
+
+      /// update jsonObjGlobal
+      var currentPath = globalPath.value
+      var jsonPathArray = currentPath.split("/")
+      var filtered = jsonPathArray.filter(function (el) {
+        return el != "";
+      });
+
+      var myPath = getRecursivePath(filtered)
+
+      // update Json object with new folder created
+      storedValue = myPath[currentFolderName]
+      delete myPath[currentFolderName];
+      myPath[newName] = storedValue
+
+      listItems(myPath)
+      getInFolder(myPath)
+      console.log("rename")
+    }
+  })
+  .catch(console.error);
+}
+
+function delFolder(event2) {
+  console.log("deleting" + event2)
 }
 
 function showmenu(ev){
     //stop the real right click menu
     ev.preventDefault();
     //show the custom menu
+    menu.classList.remove('off');
     menu.style.top = `${ev.clientY - 10}px`;
     menu.style.left = `${ev.clientX + 15}px`;
-    menu.classList.remove('off');
 }
 
 function hidemenu(ev){
@@ -90,10 +122,10 @@ function loadFileFolder(myPath) {
   var appendString = ""
   for (var item in myPath) {
     if (!myPath[item]) {
-      appendString = appendString + '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
     }
     else {
-      appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+      appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
     }
   }
   return appendString
@@ -111,103 +143,97 @@ function getRecursivePath(filteredList) {
 backButton.addEventListener("click", function() {
   event.preventDefault();
   var currentPath = globalPath.value
-  var jsonPathArray = currentPath.split("/")
-  var filtered = jsonPathArray.filter(function (el) {
-    return el != "";
-  });
 
-  if (filtered.length === 1) {
-    globalPath.value = "/"
-  } else {
-    globalPath.value = "/" + filtered.slice(0,filtered.length-1).join("/") + "/"
+  if (currentPath !== "/") {
+    var jsonPathArray = currentPath.split("/")
+    var filtered = jsonPathArray.filter(function (el) {
+      return el != "";
+    });
+
+    if (filtered.length === 1) {
+      globalPath.value = "/"
+    } else {
+      globalPath.value = "/" + filtered.slice(0,filtered.length-1).join("/") + "/"
+    }
+    var myPath = jsonObjGlobal;
+    for (var item of filtered.slice(0,filtered.length-1)) {
+      myPath = myPath[item]
+    }
+
+    // construct UI with files and folders
+    var appendString = loadFileFolder(myPath)
+
+    /// empty the div
+    $('#items').empty()
+    $('#items').html(appendString)
+
+    // get back the div and child elements of the new div (reconstruct)
+    listItems(myPath)
+    getInFolder()
   }
-  var myPath = jsonObjGlobal;
-  for (var item of filtered.slice(0,filtered.length-1)) {
-    myPath = myPath[item]
-  }
-
-  // construct UI with files and folders
-  var appendString = loadFileFolder(myPath)
-
-  /// empty the div
-  $('#items').empty()
-  $('#items').html(appendString)
-
-  // get back the div and child elements of the new div (reconstruct)
-  listItems(myPath)
-  getInFolder()
-  event.preventDefault();
-  // console.log("Current path: " + globalPath.value)
 })
 
 // Add folder button
 addNewFolder.addEventListener("click", function(event) {
   event.preventDefault();
 
-  var newFolderName = "New Folder"
-  // show input box for name
-  const prompt = require('electron-prompt');
+  if(globalPath.value!=="/") {
+    var newFolderName = "New Folder"
+    // show input box for name
 
-  prompt({
+    prompt({
       title: 'Adding a new folder...',
       label: 'Enter a name for the new folder:',
-      value: 'New folder',
+      value: "",
       inputAttrs: {
-          type: 'text'
+        type: 'text'
       },
       type: 'input'
-  })
-  .then((r) => {
-      if(r !== null) {
+    })
+    .then((r) => {
+      if(r !== null && r!== "") {
         newFolderName = r
+        var appendString = '';
+        // var folderID = '';
+        appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">'+ newFolderName +'</div></div></li>'
+        $(appendString).appendTo('#items');
+
+        /// update jsonObjGlobal
+        var currentPath = globalPath.value
+        var jsonPathArray = currentPath.split("/")
+        var filtered = jsonPathArray.filter(function (el) {
+          return el != "";
+        });
+
+        var myPath = getRecursivePath(filtered)
+
+        // update Json object with new folder created
+        var renamedNewFolder = newFolderName
+        myPath[renamedNewFolder] = {}
+
+        listItems(myPath)
+        getInFolder()
       }
-      var appendString = '';
-      // var folderID = '';
-      appendString = appendString + '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">'+ newFolderName +'</div></div>'
-      $(appendString).appendTo('#items');
-
-      /// update jsonObjGlobal
-      var currentPath = globalPath.value
-      var jsonPathArray = currentPath.split("/")
-      var filtered = jsonPathArray.filter(function (el) {
-        return el != "";
-      });
-
-      var myPath = getRecursivePath(filtered)
-      console.log(myPath)
-
-      // update Json object with new folder created
-      var renamedNewFolder = newFolderName
-      myPath[renamedNewFolder] = {}
-
-      listItems(myPath)
-      getInFolder()
     })
 
-  .catch(console.error);
-})
-
-//  rename
-function renameFolder(renamedNewFolder) {
-  // renamedNewFolder = ""
-
-  var myPath = jsonObjGlobal;
-  for (var item of filtered) {
-    myPath = myPath[item]
+    .catch(console.error);
+  } else {
+      alert("New folders cannot be added at this level!")
   }
 
-  myPath[renamedNewFolder] = {}
-}
+})
 
+// //  rename
+// function renameFolder(renamedNewFolder) {
+//   // renamedNewFolder = ""
 //
-// $( ".single-item" ).keydown(function() {
-//   var renamedNewFolder;
-//   renamedNewFolder = $( this ).val();
-//   $( event.target ).children()
-//   // $("#new-folder").attr("id", filtered.join("-") + "-" + renamedNewFolder);
-//   renameFolder(renamedNewFolder)
-// })
-// .keyup();
+//   var myPath = jsonObjGlobal;
+//   for (var item of filtered) {
+//     myPath = myPath[item]
+//   }
+//
+//   myPath[renamedNewFolder] = {}
+// }
 
 // /////
 
@@ -219,23 +245,24 @@ function allowDrop(ev) {
 
 function drop(ev) {
   ev.preventDefault();
-  var itemName = ev.dataTransfer.files[0].name
-  var itemType = ev.dataTransfer.types
-  var duplicate = false
+  for (var i=0; i<ev.dataTransfer.files.length;i++) {
+    var itemName = ev.dataTransfer.files[i].name
+    var itemType = ev.dataTransfer.files[i].size
+    var duplicate = false
 
-  // check for duplicate or files with the same name
-  for (var i=0; i<ev.target.children.length;i++) {
-    if (itemName === ev.target.children[i].innerText) {
-      duplicate = true
-      break
+    // check for duplicate or files with the same name
+    for (var j=0; j<ev.target.children.length;j++) {
+      if (itemName === ev.target.children[j].innerText) {
+        duplicate = true
+        break
+      }
     }
-  }
 
-  /// check for File, not allowed Folder drag and drop for now
-  if (itemType[0] === "Files") {
-    if (duplicate) {
-      alert('Duplicate file name!')
-    } else {
+    /// check for File, not allowed Folder drag and drop for now
+    if (itemType !== 0) {
+      if (duplicate) {
+        alert('Duplicate file name!')
+      } else {
         var currentPath = globalPath.value
         var jsonPathArray = currentPath.split("/")
         var filtered = jsonPathArray.filter(function (el) {
@@ -244,14 +271,15 @@ function drop(ev) {
 
         var myPath = getRecursivePath(filtered)
 
-// ev.dataTransfer.files[0].path
-        myPath[ev.dataTransfer.files[0].name] = null
+        // ev.dataTransfer.files[0].path
+        myPath[itemName] = null
         // var myspan = "<span style='display: none' id='myspan'>' + ev.dataTransfer.files[0].path + '</span>"
-        var appendString = '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+ev.dataTransfer.files[0].name+'</div></div>'
+        var appendString = '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div></li>'
         $(appendString).appendTo(ev.target);
-    }
-  } else {
+      }
+    } else {
       alert('Folders are not allowed to be dropped in this area!')
+    }
   }
 }
 
@@ -302,18 +330,17 @@ function listItems(jsonObj) {
         for (var item in jsonObj) {
           if (!(item in ["code", "primary", "derivatives", "source", "docs", "protocols"])) {
             if (!jsonObj[item]) {
-              appendString = appendString + '<div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+              appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
             }
             else {
               folderID = item
-              appendString = appendString + '<div class="single-item" id=' + folderID + '><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+              appendString = appendString + '<li><div class="single-item" oncontextmenu="myFunction(this)" id=' + folderID + '><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
             }
           }
         }
 
         $('#items').empty()
         $('#items').html(appendString)
-
   }
 
   /// Rename a file
