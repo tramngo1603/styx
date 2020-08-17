@@ -41,13 +41,11 @@ menu = document.querySelector('.menu');
 function myFunction(event) {
 
   $(".menu li").unbind().click(function(){
-    switch ($(this).attr('id')) {
-      case "rename":
+    if ($(this).attr('id') === "rename") {
         renameFolder(event)
-
-      case "delete":
-        console.log($(this));
-    }
+      } else if ($(this).attr('id') === "delete") {
+        delFolder(event)
+      }
      // Hide it AFTER the action was triggered
      hideMenu()
  });
@@ -100,7 +98,7 @@ function renameFolder(event1) {
   })
   .then((r) => {
     if(r !== null && r!== "") {
-      var newName = r
+      var newName = r.trim()
       event1.parentElement.parentElement.innerText = newName
 
       /// update jsonObjGlobal
@@ -119,14 +117,28 @@ function renameFolder(event1) {
 
       listItems(myPath)
       getInFolder(myPath)
-      console.log("rename")
     }
   })
   .catch(console.error);
 }
 
 function delFolder(event2) {
-  console.log("deleting" + event2)
+  var currentFolderName = event2.parentElement.parentElement.innerText
+
+  /// update jsonObjGlobal
+  var currentPath = globalPath.value
+  var jsonPathArray = currentPath.split("/")
+  var filtered = jsonPathArray.filter(function (el) {
+    return el != "";
+  });
+
+  var myPath = getRecursivePath(filtered)
+
+  // update Json object with new folder created
+  delete myPath[currentFolderName];
+
+  listItems(myPath)
+  getInFolder(myPath)
 }
 
 function showmenu(ev){
@@ -219,7 +231,7 @@ addNewFolder.addEventListener("click", function(event) {
     })
     .then((r) => {
       if(r !== null && r!== "") {
-        newFolderName = r
+        newFolderName = r.trim()
         var appendString = '';
         // var folderID = '';
         appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">'+ newFolderName +'</div></div></li>'
@@ -357,11 +369,11 @@ function listItems(jsonObj) {
         for (var item in jsonObj) {
           if (!(item in ["code", "primary", "derivatives", "source", "docs", "protocols"])) {
             if (!jsonObj[item]) {
-              appendString = appendString + '<div class="single-item"><h1 class="folder file"><i  oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+              appendString = appendString + '<div class="single-item"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
             }
             else {
               folderID = item
-              appendString = appendString + '<div class="single-item" id=' + folderID + '><h1 class="folder blue"><i  oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+              appendString = appendString + '<div class="single-item" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
             }
           }
         }
