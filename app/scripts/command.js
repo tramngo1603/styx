@@ -15,7 +15,7 @@ var jsonObjGlobal = {
       'subm.xlsx':null
     }
   },
-  "derivatives": {},
+  "derivative": {},
   "primary": {
     'dataset_desc.xlsx': null,
     'dataset_description.xlsx': null},
