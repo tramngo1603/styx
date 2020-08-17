@@ -106,9 +106,9 @@ button[disabled]{
 }
 
 .menu.off{
+    display: none;
     top: -200%;
     left: -200%;
-    display: none;
 }
 
 .menu-item{

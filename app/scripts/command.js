@@ -37,30 +37,56 @@ const contextMenu = document.getElementById("mycontext")
 
 let menu = null;
 menu = document.querySelector('.menu');
-menu.classList.add('off');
 
 function myFunction(event) {
 
-  event.addEventListener('contextmenu', showmenu, false)
-  menu.addEventListener('mouseleave', hidemenu);
+  $(".menu li").unbind().click(function(){
+    switch ($(this).attr('id')) {
+      case "rename":
+        renameFolder(event)
 
-  onClickMenu(event)
-}
-
-// function contextMenuActions(event) {}
-
-function onClickMenu(parentEvent) {
-  menu.addEventListener("click", function() {
-    if (event.target.id === "rename") {
-      renameFolder(parentEvent)
-    } else if (event.target.id === "delete") {
-      delFolder(parentEvent)
+      case "delete":
+        console.log($(this));
     }
-  })
+     // Hide it AFTER the action was triggered
+     hideMenu()
+ });
 }
+
+
+// ////////////////////////////////////////////////////////////////////////////
+// Trigger action when the contexmenu is about to be shown
+$(document).bind("contextmenu", function (event) {
+
+    // Avoid the real one
+    event.preventDefault();
+
+    // Show contextmenu
+    showmenu(event)
+    // $(".menu").finish().toggle(100).
+    //
+    // // In the right position (the mouse)
+    // css({
+    //     top: event.pageY + "px",
+    //     left: event.pageX + "px"
+    // });
+});
+
+
+// If the document is clicked somewhere
+document.addEventListener('contextmenu', function(e){
+  if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
+    hideMenu()
+  } else {
+    showmenu(e)
+  }
+});
+
+// ////////////////////////////////////////////////////////////////////////////
+
 
 function renameFolder(event1) {
-  var currentFolderName = event1.children[1].innerText
+  var currentFolderName = event1.parentElement.parentElement.innerText
 
   // show input box for new name
   prompt({
@@ -75,7 +101,7 @@ function renameFolder(event1) {
   .then((r) => {
     if(r !== null && r!== "") {
       var newName = r
-      event1.children[1].innerText = newName
+      event1.parentElement.parentElement.innerText = newName
 
       /// update jsonObjGlobal
       var currentPath = globalPath.value
@@ -107,15 +133,16 @@ function showmenu(ev){
     //stop the real right click menu
     ev.preventDefault();
     //show the custom menu
-    menu.classList.remove('off');
+    // menu.classList.remove('off');
+    menu.style.display = "block";
     menu.style.top = `${ev.clientY - 10}px`;
     menu.style.left = `${ev.clientX + 15}px`;
 }
 
-function hidemenu(ev){
-    menu.classList.add('off');
-    menu.style.top = '129px';
-    menu.style.left = '93px';
+function hideMenu(){
+  menu.style.display = "none";
+  menu.style.top = '-200%';
+  menu.style.left = '-200%';
 }
 
 function loadFileFolder(myPath) {
@@ -330,11 +357,11 @@ function listItems(jsonObj) {
         for (var item in jsonObj) {
           if (!(item in ["code", "primary", "derivatives", "source", "docs", "protocols"])) {
             if (!jsonObj[item]) {
-              appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+              appendString = appendString + '<div class="single-item"><h1 class="folder file"><i  oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
             }
             else {
               folderID = item
-              appendString = appendString + '<li><div class="single-item" oncontextmenu="myFunction(this)" id=' + folderID + '><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+              appendString = appendString + '<div class="single-item" id=' + folderID + '><h1 class="folder blue"><i  oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
             }
           }
         }
