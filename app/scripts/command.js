@@ -24,9 +24,9 @@ var jsonObjGlobal = {
   },
   "docs": {},
   "protocols": {},
-  "submission.xlsx": null,
-  "dataset_description.xlsx": null,
-  "README.txt": null
+  "submission.xlsx": "C:/mypath/folder1/sub-folder-1/submission.xlsx",
+  "dataset_description.xlsx": "C:/mypath/folder1/sub-folder-1/dataset_description.xlsx",
+  "README.txt": "C:/mypath/folder1/sub-folder-1/README.txt"
 }
 
 const globalPath = document.getElementById("input-global-path")
@@ -49,6 +49,7 @@ function myFunction(event) {
      // Hide it AFTER the action was triggered
      hideMenu()
  });
+ hideMenu()
 }
 
 
@@ -61,13 +62,6 @@ $(document).bind("contextmenu", function (event) {
 
     // Show contextmenu
     showmenu(event)
-    // $(".menu").finish().toggle(100).
-    //
-    // // In the right position (the mouse)
-    // css({
-    //     top: event.pageY + "px",
-    //     left: event.pageX + "px"
-    // });
 });
 
 
@@ -78,6 +72,14 @@ document.addEventListener('contextmenu', function(e){
   } else {
     showmenu(e)
   }
+});
+
+// If the document is clicked somewhere
+document.addEventListener('click', function(e){
+  if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
+    hideMenu()
+    hideFullPath()
+  } 
 });
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -123,19 +125,20 @@ function renameFolder(event1) {
 }
 
 function delFolder(event2) {
-  var currentFolderName = event2.parentElement.parentElement.innerText
+
+  var itemToDelete = event2.parentElement.parentElement.innerText
 
   /// update jsonObjGlobal
   var currentPath = globalPath.value
   var jsonPathArray = currentPath.split("/")
-  var filtered = jsonPathArray.filter(function (el) {
-    return el != "";
+  var filtered = jsonPathArray.filter(function (element) {
+    return element != "";
   });
 
   var myPath = getRecursivePath(filtered)
 
   // update Json object with new folder created
-  delete myPath[currentFolderName];
+  delete myPath[itemToDelete];
 
   listItems(myPath)
   getInFolder(myPath)
@@ -149,6 +152,14 @@ function showmenu(ev){
     menu.style.display = "block";
     menu.style.top = `${ev.clientY - 10}px`;
     menu.style.left = `${ev.clientX + 15}px`;
+}
+
+function showFullPath(ev, text) {
+  ev.preventDefault()
+  fullPathValue.style.display = "block";
+  fullPathValue.innerHTML = text
+  fullPathValue.style.top = `${ev.clientY - 10}px`;
+  fullPathValue.style.left = `${ev.clientX + 15}px`;
 }
 
 function hideMenu(){
@@ -262,18 +273,6 @@ addNewFolder.addEventListener("click", function(event) {
 
 })
 
-// //  rename
-// function renameFolder(renamedNewFolder) {
-//   // renamedNewFolder = ""
-//
-//   var myPath = jsonObjGlobal;
-//   for (var item of filtered) {
-//     myPath = myPath[item]
-//   }
-//
-//   myPath[renamedNewFolder] = {}
-// }
-
 // /////
 
 listItems(jsonObjGlobal)
@@ -285,6 +284,7 @@ function allowDrop(ev) {
 function drop(ev) {
   ev.preventDefault();
   for (var i=0; i<ev.dataTransfer.files.length;i++) {
+    var itemPath = ev.dataTransfer.files[i].path
     var itemName = ev.dataTransfer.files[i].name
     var itemType = ev.dataTransfer.files[i].size
     var duplicate = false
@@ -300,7 +300,7 @@ function drop(ev) {
     /// check for File, not allowed Folder drag and drop for now
     if (itemType !== 0) {
       if (duplicate) {
-        alert('Duplicate file name!')
+        alert('Duplicate file name: ' + itemName)
       } else {
         var currentPath = globalPath.value
         var jsonPathArray = currentPath.split("/")
@@ -310,11 +310,14 @@ function drop(ev) {
 
         var myPath = getRecursivePath(filtered)
 
-        // ev.dataTransfer.files[0].path
-        myPath[itemName] = null
-        // var myspan = "<span style='display: none' id='myspan'>' + ev.dataTransfer.files[0].path + '</span>"
-        var appendString = '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div></li>'
+        var filePath = ev.dataTransfer.files[i].path
+        myPath[itemName] = filePath
+
+        var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
         $(appendString).appendTo(ev.target);
+
+        listItems(myPath)
+        getInFolder()
       }
     } else {
       alert('Folders are not allowed to be dropped in this area!')
@@ -355,9 +358,43 @@ function getInFolder() {
     } else {
         alert("Please click on a folder to explore!")
     }
-    console.log("Current path: " + globalPath.value)
   })
 }
+
+var fullPathValue = document.querySelector(".hoverText")
+
+function hideFullPath() {
+  fullPathValue.style.display = "none";
+  fullPathValue.style.top = '-210%';
+  fullPathValue.style.left = '-210%';
+}
+
+/// hover for a full path
+function hoverForPath(ev) {
+    $(ev).unbind()
+    var currentPath = globalPath.value
+    var jsonPathArray = currentPath.split("/")
+    var filtered = jsonPathArray.filter(function (el) {
+      return el != "";
+    });
+
+    var myPath = getRecursivePath(filtered)
+
+    // get full path from JSON object
+    var fullPath = myPath[ev.innerText]
+    showFullPath(event, fullPath)
+}
+
+
+// If the document is clicked somewhere
+document.addEventListener('onmouseover', function(e){
+  if (e.target.classList.value !== "fas fa-file") {
+    hideFullPath()
+  } else {
+    hoverForPath(e)
+  }
+});
+
 
 getInFolder()
 
@@ -368,8 +405,8 @@ function listItems(jsonObj) {
 
         for (var item in jsonObj) {
           if (!(item in ["code", "primary", "derivatives", "source", "docs", "protocols"])) {
-            if (!jsonObj[item]) {
-              appendString = appendString + '<div class="single-item"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            if (typeof jsonObj[item] !== "object") {
+              appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
             }
             else {
               folderID = item
