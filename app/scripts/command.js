@@ -81,13 +81,32 @@ document.addEventListener('click', function(e){
 
 
 function renameFolder(event1) {
-  var currentFolderName = event1.parentElement.parentElement.innerText
+
+  var promptVar;
+  var type;
+  var newName;
+  var currentName = event1.parentElement.parentElement.innerText
+  var withoutExtension;
+
+  if (event1.classList.value === "fas fa-file") {
+    promptVar = "file";
+    type = "file";
+  } else if (event1.classList.value === "fas fa-folder") {
+    promptVar = "folder";
+    type = "folder";
+  }
+
+  if (type==="file") {
+    withoutExtension = currentName.slice(0,currentName.indexOf("."))
+  } else {
+    withoutExtension = currentName
+  }
 
   // show input box for new name
   prompt({
-    title: 'Renaming folder '+ currentFolderName +': ...',
+    title: 'Renaming '+ promptVar + " " + currentName +': ...',
     label: 'Enter a new name:',
-    value: currentFolderName,
+    value: withoutExtension,
     inputAttrs: {
       type: 'text'
     },
@@ -95,25 +114,32 @@ function renameFolder(event1) {
   })
   .then((r) => {
     if(r !== null && r!== "") {
-      var newName = r.trim()
+      if (type==="file") {
+        newName = r.trim() + currentName.slice(currentName.indexOf("."))
+      } else {
+        newName = r.trim()
+      }
+
+      /// assign new name to folder in the UI
       event1.parentElement.parentElement.innerText = newName
 
-      /// update jsonObjGlobal
+      /// update jsonObjGlobal with the new name
+      /// get current location first
       var currentPath = globalPath.value
       var jsonPathArray = currentPath.split("/")
       var filtered = jsonPathArray.filter(function (el) {
         return el != "";
       });
 
+      // updating object
       var myPath = getRecursivePath(filtered)
-
-      // update Json object with new folder created
-      storedValue = myPath[currentFolderName]
-      delete myPath[currentFolderName];
+      storedValue = myPath[currentName]
+      delete myPath[currentName];
       myPath[newName] = storedValue
 
       listItems(myPath)
       getInFolder(myPath)
+      console.log(myPath)
     }
   })
   .catch(console.error);
@@ -254,24 +280,17 @@ addNewFolder.addEventListener("click", function(event) {
 listItems(jsonObjGlobal)
 
 function populateJSONObjFolder(jsonObject, folderPath) {
-  fs.readdir(folderPath, function(err, myitems) {
-    console.log(myitems)
+    var myitems = fs.readdirSync(folderPath)
     myitems.forEach(element => {
-      fs.stat(pathlib.join(folderPath, element), (error, stats) => {
-        if (error) {
-          console.log(error);
-        } else {
-            var addedElement = pathlib.join(folderPath, element)
-            if (stats.isDirectory()) {
-              jsonObject[element] = {}
-              populateJSONObjFolder(jsonObject[element], addedElement)
-            } else if (stats.isFile()) {
-                jsonObject[element] = addedElement
-            }
-          }
-        });
-      })
-  });
+      var statsObj = fs.statSync(pathlib.join(folderPath, element))
+      var addedElement = pathlib.join(folderPath, element)
+      if (statsObj.isDirectory()) {
+        jsonObject[element] = {}
+        populateJSONObjFolder(jsonObject[element], addedElement)
+      } else if (statsObj.isFile()) {
+          jsonObject[element] = addedElement
+        }
+    });
 }
 
 function allowDrop(ev) {
