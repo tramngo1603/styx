@@ -105,7 +105,21 @@ button[disabled]{
     padding: 5px 5px;
 }
 
-.hoverText {
+.hoverPath {
+    /* min-width: 50px; */
+    max-width: auto;
+    min-height: auto;
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #aaa;
+    /* box-shadow: 2px 2px 2px #999; */
+    border-radius: 3px;
+    position: absolute;
+    padding: 5px 5px;
+    font-size: 11px;
+}
+
+.hoverFullName {
     /* min-width: 50px; */
     max-width: auto;
     min-height: auto;
@@ -184,7 +198,7 @@ i.fas.fa-file {
     text-overflow: ellipsis;
     -webkit-user-select: none;
     padding: 0px 4px 0px 4px;
-    word-wrap: break-word;
+    /* word-wrap: break-word; */
     line-height: 1.5;
 }
 .blue {

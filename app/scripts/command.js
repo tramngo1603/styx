@@ -32,8 +32,8 @@ const addFiles = document.getElementById("add-files")
 const addNewFolder = document.getElementById("new-folder")
 const addFolders = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
-var fullPathValue = document.querySelector(".hoverText")
-
+var fullPathValue = document.querySelector(".hoverPath")
+var fullNameValue = document.querySelector(".hoverFullName")
 
 function getGlobalPath() {
   var currentPath = globalPath.value
@@ -68,7 +68,11 @@ addFolders.addEventListener("click", function() {
 
 function addFoldersfunction(folderArray, currentLocation) {
 
-  // check for duplicates/folders with the same name
+  if (globalPath.value === "/") {
+    alert("Additional folders cannot be added to this level!")
+  } else {
+
+    // check for duplicates/folders with the same name
     for (var i=0; i<folderArray.length;i++) {
       var baseName = path.basename(folderArray[i])
       var duplicate = false;
@@ -87,7 +91,7 @@ function addFoldersfunction(folderArray, currentLocation) {
         currentLocation[baseName] = {}
         populateJSONObjFolder(currentLocation[baseName], folderArray[i])
 
-        var appendString = '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+        var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
         $('#items').html(appendString)
 
@@ -95,6 +99,7 @@ function addFoldersfunction(folderArray, currentLocation) {
         getInFolder()
       }
     }
+  }
 }
 
 function addFilesfunction(fileArray, currentLocation) {
@@ -102,29 +107,35 @@ function addFilesfunction(fileArray, currentLocation) {
   // check for duplicate or files with the same name
     for (var i=0; i<fileArray.length;i++) {
       var baseName = path.basename(fileArray[i])
-      var duplicate = false;
-      for (var objKey in currentLocation) {
-        if (typeof currentLocation[objKey] !== "object") {
-          if (baseName === objKey) {
-            duplicate = true
-            break
+
+      if (globalPath.value === "/" && (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(baseName))) {
+        alert("Only metadata files can be added to this level!")
+        break
+      } else {
+        var duplicate = false;
+        for (var objKey in currentLocation) {
+          if (typeof currentLocation[objKey] !== "object") {
+            if (baseName === objKey) {
+              duplicate = true
+              break
+            }
           }
         }
+        if (duplicate) {
+          alert('Duplicate file name: ' + baseName)
+        } else {
+          // if (itemName!==)
+
+          currentLocation[baseName] = fileArray[i]
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+
+          $('#items').html(appendString)
+
+          listItems(currentLocation)
+          getInFolder()
+        }
       }
-      if (duplicate) {
-        alert('Duplicate file name: ' + baseName)
-      } else {
-        // if (itemName!==)
-
-        currentLocation[baseName] = fileArray[i]
-        var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
-
-        $('#items').html(appendString)
-
-        listItems(currentLocation)
-        getInFolder()
-      }
-    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -190,6 +201,13 @@ function renameFolder(event1) {
   var newName;
   var currentName = event1.parentElement.parentElement.innerText
   var withoutExtension;
+  var highLevelFolderBool;
+
+  if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(currentName)) {
+    highLevelFolderBool = true
+  } else {
+    highLevelFolderBool = false
+  }
 
   if (event1.classList.value === "fas fa-file") {
     promptVar = "file";
@@ -205,67 +223,81 @@ function renameFolder(event1) {
     withoutExtension = currentName
   }
 
-  // show input box for new name
-  prompt({
-    title: 'Renaming '+ promptVar + " " + currentName +': ...',
-    label: 'Enter a new name:',
-    value: withoutExtension,
-    inputAttrs: {
-      type: 'text'
-    },
-    type: 'input'
-  })
-  .then((r) => {
-    if(r !== null && r!== "") {
-      if (type==="file") {
-        newName = r.trim() + currentName.slice(currentName.indexOf("."))
-      } else {
-        newName = r.trim()
+  if (highLevelFolderBool) {
+    alert("High-level SPARC folders cannot be renamed!")
+  } else {
+    // show input box for new name
+    prompt({
+      title: 'Renaming '+ promptVar + " " + currentName +': ...',
+      label: 'Enter a new name:',
+      value: withoutExtension,
+      inputAttrs: {
+        type: 'text'
+      },
+      type: 'input'
+    })
+    .then((r) => {
+      if(r !== null && r!== "") {
+        if (type==="file") {
+          newName = r.trim() + currentName.slice(currentName.indexOf("."))
+        } else {
+          newName = r.trim()
+        }
+
+        /// assign new name to folder in the UI
+        event1.parentElement.parentElement.innerText = newName
+
+        /// update jsonObjGlobal with the new name
+        /// get current location first
+        var currentPath = globalPath.value
+        var jsonPathArray = currentPath.split("/")
+        var filtered = jsonPathArray.filter(function (el) {
+          return el != "";
+        });
+
+        // updating object
+        var myPath = getRecursivePath(filtered)
+        storedValue = myPath[currentName]
+        delete myPath[currentName];
+        myPath[newName] = storedValue
+
+        listItems(myPath)
+        getInFolder(myPath)
+        console.log(myPath)
       }
-
-      /// assign new name to folder in the UI
-      event1.parentElement.parentElement.innerText = newName
-
-      /// update jsonObjGlobal with the new name
-      /// get current location first
-      var currentPath = globalPath.value
-      var jsonPathArray = currentPath.split("/")
-      var filtered = jsonPathArray.filter(function (el) {
-        return el != "";
-      });
-
-      // updating object
-      var myPath = getRecursivePath(filtered)
-      storedValue = myPath[currentName]
-      delete myPath[currentName];
-      myPath[newName] = storedValue
-
-      listItems(myPath)
-      getInFolder(myPath)
-      console.log(myPath)
-    }
-  })
-  .catch(console.error);
+    })
+    .catch(console.error);
+  }
 }
 
 function delFolder(event2) {
 
   var itemToDelete = event2.parentElement.parentElement.innerText
 
-  /// update jsonObjGlobal
-  var currentPath = globalPath.value
-  var jsonPathArray = currentPath.split("/")
-  var filtered = jsonPathArray.filter(function (element) {
-    return element != "";
-  });
+  if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(itemToDelete)) {
+    highLevelFolderBool = true
+  } else {
+    highLevelFolderBool = false
+  }
 
-  var myPath = getRecursivePath(filtered)
+  if (highLevelFolderBool) {
+    alert("High-level SPARC folders cannot be deleted!")
+  } else {
+    /// update jsonObjGlobal
+    var currentPath = globalPath.value
+    var jsonPathArray = currentPath.split("/")
+    var filtered = jsonPathArray.filter(function (element) {
+      return element != "";
+    });
 
-  // update Json object with new folder created
-  delete myPath[itemToDelete];
+    var myPath = getRecursivePath(filtered)
 
-  listItems(myPath)
-  getInFolder(myPath)
+    // update Json object with new folder created
+    delete myPath[itemToDelete];
+
+    listItems(myPath)
+    getInFolder(myPath)
+  }
 }
 
 function showmenu(ev){
@@ -276,14 +308,6 @@ function showmenu(ev){
     menu.style.display = "block";
     menu.style.top = `${ev.clientY - 10}px`;
     menu.style.left = `${ev.clientX + 15}px`;
-}
-
-function showFullPath(ev, text) {
-  ev.preventDefault()
-  fullPathValue.style.display = "block";
-  fullPathValue.innerHTML = text
-  fullPathValue.style.top = `${ev.clientY - 10}px`;
-  fullPathValue.style.left = `${ev.clientX + 15}px`;
 }
 
 function hideMenu(){
@@ -349,7 +373,7 @@ addNewFolder.addEventListener("click", function(event) {
         newFolderName = r.trim()
         var appendString = '';
         // var folderID = '';
-        appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div contentEditable="true" id="new-folder" class="folder_desc">'+ newFolderName +'</div></div></li>'
+        appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+ newFolderName +'</div></div>'
         $(appendString).appendTo('#items');
 
         /// update jsonObjGlobal
@@ -474,7 +498,7 @@ function drop(ev) {
 
           myPath[itemName] = folderJsonObject
 
-          var appendString = '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -485,6 +509,14 @@ function drop(ev) {
   }
 }
 
+function showFullPath(ev, text) {
+  ev.preventDefault()
+  fullPathValue.style.display = "block";
+  fullPathValue.style.top = `${ev.clientY - 10}px`;
+  fullPathValue.style.left = `${ev.clientX + 15}px`;
+  fullPathValue.innerHTML = text
+}
+
 function hideFullPath() {
   fullPathValue.style.display = "none";
   fullPathValue.style.top = '-210%';
@@ -493,7 +525,6 @@ function hideFullPath() {
 
 /// hover for a full path
 function hoverForPath(ev) {
-    $(ev).unbind()
     var currentPath = globalPath.value
     var jsonPathArray = currentPath.split("/")
     var filtered = jsonPathArray.filter(function (el) {
@@ -507,6 +538,34 @@ function hoverForPath(ev) {
     showFullPath(event, fullPath)
 }
 
+//// HOVER FOR FULL NAME (FOLDERS WITH WRAPPED NAME IN UI)
+function showFullName(ev, element, text) {
+
+  /// check if the full name of the folder is overflowing or not, if so, show full name on hover
+  var isOverflowing = element.clientWidth < element.scrollWidth || element.clientHeight < element.scrollHeight;
+  if (isOverflowing) {
+    ev.preventDefault()
+    fullNameValue.style.display = "block";
+    fullNameValue.style.top = `${ev.clientY - 10}px`;
+    fullNameValue.style.left = `${ev.clientX + 15}px`;
+    fullNameValue.innerHTML = text
+  }
+}
+
+function hideFullName() {
+  fullNameValue.style.display = "none";
+  fullNameValue.style.top = '-250%';
+  fullNameValue.style.left = '-250%';
+}
+
+///hover over a function for full name
+function hoverForFullName(ev) {
+    var fullPath = ev.innerText
+
+    // ev.children[1] is the child element folder_desc of div.single-item,
+    // which we will put through the overflowing check in showFullName function
+    showFullName(event, ev.children[1], fullPath)
+}
 
 // If the document is clicked somewhere
 document.addEventListener('onmouseover', function(e){
@@ -517,25 +576,49 @@ document.addEventListener('onmouseover', function(e){
   }
 });
 
+document.addEventListener('onmouseover', function(e){
+  if (e.target.classList.value === "fas fa-folder") {
+    hoverForFullName(e)
+  } else {
+    hideFullName()
+  }
+});
+
 
 getInFolder()
 
-function listItems(jsonObj) {
+// sort JSON objects by keys alphabetically (folder by folder, file by file)
+function sortObjByKeys(object) {
+  const orderedFolders = {};
+  const orderedFiles = {};
+  Object.keys(object).sort().forEach(function(key) {
+    if (typeof object[key] === "object") {
+      orderedFolders[key] = object[key];
+    } else if (typeof object[key] === "string") {
+      orderedFiles[key] = object[key]
+    }
+  });
+  const orderedObject = {
+    ...orderedFolders,
+    ...orderedFiles
+  }
+  return orderedObject
+}
 
+function listItems(jsonObj) {
 
         var appendString = ''
         var folderID = ''
 
-        for (var item in jsonObj) {
-          if (!(item in ["code", "primary", "derivatives", "source", "docs", "protocols"])) {
-            if (typeof jsonObj[item] !== "object") {
-              appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
-            }
-            else {
+        var sortedObj = sortObjByKeys(jsonObj)
 
-              folderID = item
-              appendString = appendString + '<div class="single-item" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
-            }
+        for (var item in sortedObj) {
+          if (typeof sortedObj[item] !== "object") {
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+          }
+          else {
+            folderID = item
+            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
         }
 
@@ -545,8 +628,11 @@ function listItems(jsonObj) {
 
 function loadFileFolder(myPath) {
   var appendString = ""
-  for (var item in myPath) {
-    if (!myPath[item]) {
+
+  var sortedObj = sortObjByKeys(myPath)
+
+  for (var item in sortedObj) {
+    if (typeof sortedObj[item] === "string") {
       appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
     }
     else {
