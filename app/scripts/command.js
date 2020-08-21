@@ -1,10 +1,12 @@
 var cmd = require('node-cmd');
 let os = require('os')
-var pathlib = require('path')
+var path = require('path')
 var fs = require('fs');
 var $ = require('jquery');
 const prompt = require('electron-prompt');
-const util = require('util')
+const {ipcRenderer} = require('electron')
+const dialog = require('electron').remote.dialog
+const electron = require('electron')
 
 var backFolder = []
 var forwardFolder =[]
@@ -27,8 +29,112 @@ var jsonObjGlobal = {
 const globalPath = document.getElementById("input-global-path")
 const backButton = document.getElementById("button-back")
 const addFiles = document.getElementById("add-files")
-const addNewFolder = document.getElementById("add-folders")
+const addNewFolder = document.getElementById("new-folder")
+const addFolders = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
+var fullPathValue = document.querySelector(".hoverText")
+
+
+function getGlobalPath() {
+  var currentPath = globalPath.value
+  var jsonPathArray = currentPath.split("/")
+  var filtered = jsonPathArray.filter(function (el) {
+    return el != "";
+  });
+  return filtered
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+///// FILE BROWSERS ADD FILES & FOLDERS //////////////////////////////////////
+
+addFiles.addEventListener("click", function() {
+   dialog.showOpenDialog({ properties: ['openFile', 'multiSelections']
+ }).then(result => {
+      var filtered = getGlobalPath()
+      var myPath = getRecursivePath(filtered)
+      addFilesfunction(result.filePaths, myPath)
+  })
+})
+
+addFolders.addEventListener("click", function() {
+  dialog.showOpenDialog({ properties: ['openDirectory', 'multiSelections']
+  }).then(result => {
+      var filtered = getGlobalPath()
+      var myPath = getRecursivePath(filtered)
+      addFoldersfunction(result.filePaths, myPath)
+  })
+})
+
+function addFoldersfunction(folderArray, currentLocation) {
+
+  // check for duplicates/folders with the same name
+    for (var i=0; i<folderArray.length;i++) {
+      var baseName = path.basename(folderArray[i])
+      var duplicate = false;
+      for (var objKey in currentLocation) {
+        if (typeof currentLocation[objKey] === "object") {
+          if (baseName === objKey) {
+            duplicate = true
+            break
+          }
+        }
+      }
+      if (duplicate) {
+        alert('Duplicate folder name: ' + baseName)
+      } else {
+
+        currentLocation[baseName] = {}
+        populateJSONObjFolder(currentLocation[baseName], folderArray[i])
+
+        var appendString = '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+
+        $('#items').html(appendString)
+
+        listItems(currentLocation)
+        getInFolder()
+      }
+    }
+}
+
+function addFilesfunction(fileArray, currentLocation) {
+
+  // check for duplicate or files with the same name
+    for (var i=0; i<fileArray.length;i++) {
+      var baseName = path.basename(fileArray[i])
+      var duplicate = false;
+      for (var objKey in currentLocation) {
+        if (typeof currentLocation[objKey] !== "object") {
+          if (baseName === objKey) {
+            duplicate = true
+            break
+          }
+        }
+      }
+      if (duplicate) {
+        alert('Duplicate file name: ' + baseName)
+      } else {
+        // if (itemName!==)
+
+        currentLocation[baseName] = fileArray[i]
+        var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+
+        $('#items').html(appendString)
+
+        listItems(currentLocation)
+        getInFolder()
+      }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+///// CONTEXT MENU OPTIONS
+//////////////////////////////////////////////////////////////////////////////
+
 
 let menu = null;
 menu = document.querySelector('.menu');
@@ -48,7 +154,6 @@ function myFunction(event) {
 }
 
 
-// ////////////////////////////////////////////////////////////////////////////
 // Trigger action when the contexmenu is about to be shown
 $(document).bind("contextmenu", function (event) {
 
@@ -76,8 +181,6 @@ document.addEventListener('click', function(e){
     hideFullPath()
   }
 });
-
-// ////////////////////////////////////////////////////////////////////////////
 
 
 function renameFolder(event1) {
@@ -145,7 +248,6 @@ function renameFolder(event1) {
   .catch(console.error);
 }
 
-
 function delFolder(event2) {
 
   var itemToDelete = event2.parentElement.parentElement.innerText
@@ -189,7 +291,7 @@ function hideMenu(){
   menu.style.top = '-200%';
   menu.style.left = '-200%';
 }
-
+///////////////////////////////////////////////////////////////////////////////
 
 /// back button
 backButton.addEventListener("click", function() {
@@ -282,8 +384,8 @@ listItems(jsonObjGlobal)
 function populateJSONObjFolder(jsonObject, folderPath) {
     var myitems = fs.readdirSync(folderPath)
     myitems.forEach(element => {
-      var statsObj = fs.statSync(pathlib.join(folderPath, element))
-      var addedElement = pathlib.join(folderPath, element)
+      var statsObj = fs.statSync(path.join(folderPath, element))
+      var addedElement = path.join(folderPath, element)
       if (statsObj.isDirectory()) {
         jsonObject[element] = {}
         populateJSONObjFolder(jsonObject[element], addedElement)
@@ -298,12 +400,22 @@ function allowDrop(ev) {
 }
 
 function drop(ev) {
+  // get global path
+  var currentPath = globalPath.value
+  var jsonPathArray = currentPath.split("/")
+  var filtered = jsonPathArray.filter(function (el) {
+    return el != "";
+  });
+  var myPath = getRecursivePath(filtered)
   ev.preventDefault();
+
   for (var i=0; i<ev.dataTransfer.files.length;i++) {
+    /// Get all the file information
     var itemPath = ev.dataTransfer.files[i].path
     var itemName = ev.dataTransfer.files[i].name
-    var itemSize = ev.dataTransfer.files[i].size
     var duplicate = false
+
+    var statsObj = fs.statSync(itemPath)
 
     // check for duplicate or files with the same name
     for (var j=0; j<ev.target.children.length;j++) {
@@ -314,61 +426,64 @@ function drop(ev) {
     }
 
     /// check for File, not allowed Folder drag and drop for now
-    if (itemSize !== 0) {
-      if (duplicate) {
-        alert('Duplicate file name: ' + itemName)
+    if (statsObj.isFile()) {
+      if (globalPath.value === "/") {
+        if (duplicate) {
+          alert('Duplicate file name: ' + itemName)
+        } else {
+            if (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(itemName)) {
+              alert("Only metadata files can be added to this level!")
+            } else {
+              myPath[itemName] = itemPath
+
+              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+              $(appendString).appendTo(ev.target);
+
+              listItems(myPath)
+              getInFolder()
+            }
+        }
       } else {
-        var currentPath = globalPath.value
-        var jsonPathArray = currentPath.split("/")
-        var filtered = jsonPathArray.filter(function (el) {
-          return el != "";
-        });
+          myPath[itemName] = itemPath
 
-        var myPath = getRecursivePath(filtered)
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          $(appendString).appendTo(ev.target);
 
-        var filePath = ev.dataTransfer.files[i].path
-        myPath[itemName] = filePath
-
-        var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
-        $(appendString).appendTo(ev.target);
-
-        listItems(myPath)
-        getInFolder()
-      }
-    } else {
+          listItems(myPath)
+          getInFolder()
+        }
+    } else if (statsObj.isDirectory()) {
       /// drop a folder
-      if (duplicate) {
-        alert('Duplicate folder name: ' + itemName)
+      if (globalPath.value === "/") {
+        alert("Other folders cannot be added to this level!")
       } else {
-        var currentPath = globalPath.value
-        var jsonPathArray = currentPath.split("/")
-        var filtered = jsonPathArray.filter(function (el) {
-          return el != "";
-        });
+        if (duplicate) {
+          alert('Duplicate folder name: ' + itemName)
+        } else {
+          var currentPath = globalPath.value
+          var jsonPathArray = currentPath.split("/")
+          var filtered = jsonPathArray.filter(function (el) {
+            return el != "";
+          });
 
-        var myPath = getRecursivePath(filtered)
+          var myPath = getRecursivePath(filtered)
 
-        // var filePath = ev.dataTransfer.files[i].path
+          var folderJsonObject = {};
 
-        var folderJsonObject = {};
+          populateJSONObjFolder(folderJsonObject, itemPath)
 
-        populateJSONObjFolder(folderJsonObject, itemPath)
+          myPath[itemName] = folderJsonObject
 
-        myPath[itemName] = folderJsonObject
-        console.log(myPath)
+          var appendString = '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          $(appendString).appendTo(ev.target);
 
-        var appendString = '<div class="single-item"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
-        $(appendString).appendTo(ev.target);
-
-        listItems(myPath)
-        getInFolder()
+          listItems(myPath)
+          getInFolder()
+        }
       }
     }
   }
 }
-
-
-var fullPathValue = document.querySelector(".hoverText")
 
 function hideFullPath() {
   fullPathValue.style.display = "none";

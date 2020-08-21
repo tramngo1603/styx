@@ -3,11 +3,11 @@ body {
     padding: 0;
     font-family: sans-serif;
 }
-.top-bar {
+/* .top-bar {
     max-width: 150px auto;
     padding: 10px;
     background-color: #303030;
-}
+} */
 .button-grp {
     display: inline-block;
     margin-right: 30px;
@@ -19,7 +19,7 @@ body {
   color: white;
 } */
 
-.add-button:focus {
+.topbar-button:focus {
   background-color: #258193;
   border: none;
   color: white;
