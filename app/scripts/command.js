@@ -1,8 +1,7 @@
-var cmd = require('node-cmd');
-let os = require('os')
-var path = require('path')
-var fs = require('fs');
-var $ = require('jquery');
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+const $ = require('jquery');
 const prompt = require('electron-prompt');
 const {ipcRenderer} = require('electron')
 const dialog = require('electron').remote.dialog
@@ -57,6 +56,7 @@ addFiles.addEventListener("click", function() {
   })
 })
 
+
 addFolders.addEventListener("click", function() {
   dialog.showOpenDialog({ properties: ['openDirectory', 'multiSelections']
   }).then(result => {
@@ -108,8 +108,8 @@ function addFilesfunction(fileArray, currentLocation) {
     for (var i=0; i<fileArray.length;i++) {
       var baseName = path.basename(fileArray[i])
 
-      if (globalPath.value === "/" && (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(baseName))) {
-        alert("Only metadata files can be added to this level!")
+      if (globalPath.value === "/" && (!["dataset_description.xlsx", "dataset_description.csv", "dataset_description.json", "submission.xlsx", "submission.json", "submission.csv", "samples.xlsx", "samples.csv", "samples.json", "subjects.xlsx", "subjects.csv", "subjects.json", "CHANGES.txt", "README.txt"].includes(baseName))) {
+        alert("Only SPARC metadata files are allowed in the high-level dataset folder:\n\n- dataset_description.xslx/.csv/.json\n- submission.xslx/.csv/.json\n- subjects.xslx/.csv/.json\n- samples.xslx/.csv/.json\n- CHANGES.txt\n- README.txt")
         break
       } else {
         var duplicate = false;
