@@ -25,17 +25,14 @@ var jsonObjGlobal = {
   "dataset_description.xlsx": "C:/mypath/folder1/sub-folder-1/dataset_description.xlsx",
 }
 
-var highLevelFoldersList = ["code", "derivative", "primary", "source", "docs", "protocol"]
-
 const globalPath = document.getElementById("input-global-path")
 const backButton = document.getElementById("button-back")
 const addFiles = document.getElementById("add-files")
 const addNewFolder = document.getElementById("new-folder")
 const addFolders = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
-const fullPathValue = document.querySelector(".hoverPath")
-const fullNameValue = document.querySelector(".hoverFullName")
-const tooltipHighLevelFolders = document.querySelector(".hoverTooltipFolders")
+var fullPathValue = document.querySelector(".hoverPath")
+var fullNameValue = document.querySelector(".hoverFullName")
 
 function getGlobalPath() {
   var currentPath = globalPath.value
@@ -94,7 +91,7 @@ function addFoldersfunction(folderArray, currentLocation) {
         currentLocation[baseName] = {}
         populateJSONObjFolder(currentLocation[baseName], folderArray[i])
 
-        var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideNameHover()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+        var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
         $('#items').html(appendString)
 
@@ -130,7 +127,7 @@ function addFilesfunction(fileArray, currentLocation) {
           // if (itemName!==)
 
           currentLocation[baseName] = fileArray[i]
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hidePathHover()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
           $('#items').html(appendString)
 
@@ -192,7 +189,7 @@ document.addEventListener('contextmenu', function(e){
 document.addEventListener('click', function(e){
   if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
     hideMenu()
-    hidePathHover(fullPathValue)
+    hideFullPath()
   }
 });
 
@@ -376,7 +373,7 @@ addNewFolder.addEventListener("click", function(event) {
         newFolderName = r.trim()
         var appendString = '';
         // var folderID = '';
-        appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideNameHover()"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+ newFolderName +'</div></div>'
+        appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+ newFolderName +'</div></div>'
         $(appendString).appendTo('#items');
 
         /// update jsonObjGlobal
@@ -458,13 +455,12 @@ function drop(ev) {
         if (duplicate) {
           alert('Duplicate file name: ' + itemName)
         } else {
-            if (!["dataset_description.xlsx", "dataset_description.csv", "dataset_description.json", "submission.xlsx", "submission.json", "submission.csv", "samples.xlsx", "samples.csv", "samples.json", "subjects.xlsx", "subjects.csv", "subjects.json", "CHANGES.txt", "README.txt"].includes(itemName)) {
-              alert("Only SPARC metadata files are allowed in the high-level dataset folder:\n\n- dataset_description (.xslx/.csv/.json)\n- submission (.xslx/.csv/.json)\n- subjects (.xslx/.csv/.json)\n- samples (.xslx/.csv/.json)\n- CHANGES.txt\n- README.txt")
-              break
+            if (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(itemName)) {
+              alert("Only metadata files can be added to this level!")
             } else {
               myPath[itemName] = itemPath
 
-              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hidePathHover()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
               $(appendString).appendTo(ev.target);
 
               listItems(myPath)
@@ -474,7 +470,7 @@ function drop(ev) {
       } else {
           myPath[itemName] = itemPath
 
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hidePathHover()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -502,11 +498,7 @@ function drop(ev) {
 
           myPath[itemName] = folderJsonObject
 
-          if (highLevelFoldersList.includes(itemName)) {
-            var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideTooltipHover()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
-          } else {
-            var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideNameHover()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
-          }
+          var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -519,11 +511,16 @@ function drop(ev) {
 
 function showFullPath(ev, text) {
   ev.preventDefault()
-
   fullPathValue.style.display = "block";
   fullPathValue.style.top = `${ev.clientY - 10}px`;
   fullPathValue.style.left = `${ev.clientX + 15}px`;
   fullPathValue.innerHTML = text
+}
+
+function hideFullPath() {
+  fullPathValue.style.display = "none";
+  fullPathValue.style.top = '-210%';
+  fullPathValue.style.left = '-210%';
 }
 
 /// hover for a full path
@@ -533,36 +530,12 @@ function hoverForPath(ev) {
     var filtered = jsonPathArray.filter(function (el) {
       return el != "";
     });
+
     var myPath = getRecursivePath(filtered)
+
     // get full path from JSON object
     var fullPath = myPath[ev.innerText]
     showFullPath(event, fullPath)
-}
-
-//// hover over high-level folders for tooltip
-function showhighLevelFolderTooltip(ev){
-
-  var folder = ev.innerText
-
-  if (folder === "code") {
-    tooltipHighLevelFolders.innerHTML = "code: Folder containing all the source code used in the study (e.g., Python, MATLAB, etc.)"
-  } else if (folder === "docs") {
-    tooltipHighLevelFolders.innerHTML = "docs: Folder containing all other supporting files that don't belong to any of the other folders (e.g., a representative image for the dataset, figures, etc.)"
-  } else if (folder === "derivative") {
-    tooltipHighLevelFolders.innerHTML = "derivative: Folder containing data files derived from raw data (e.g., processed image stacks that are annotated via the MBF tools, segmentation files, smoothed overlays of current and voltage that demonstrate a particular effect, etc.)"
-  } else if (folder === "primary") {
-    tooltipHighLevelFolders.innerHTML = "primary: Folder containing all folders and files for experimental subjects and/or samples. All subjects will have a unique folder with a standardized name the same as the names or IDs as referenced in the subjects metadata file. Within each subject folder, the experimenter may choose to include an optional “session” folder if the subject took part in multiple experiments/ trials/ sessions. The resulting data is contained within data type-specific (Datatype) folders within the subject (or session) folders. The SPARC program’s Data Sharing Committee defines 'raw' (primary) data as one of the types of data that should be shared. This covers minimally processed raw data, e.g. time-series data, tabular data, clinical imaging data, genomic, metabolomic, microscopy data, which can also be included within their own folders."
-  } else if (folder === "protocol") {
-    tooltipHighLevelFolders.innerHTML = "protocol: Folder containing supplementary files to accompany the experimental protocols submitted to Protocols.io. Please note that this is not a substitution for the experimental protocol which must be submitted to <a href='https://www.protocols.io/groups/sparc'>Protocols.io/sparc</a>."
-  } else if (folder === "source") {
-    tooltipHighLevelFolders.innerHTML = "source: Folder containing very raw data i.e. raw or untouched files from an experiment. For example, this folder may include the “truly” raw k-space data for an MR image that has not yet been reconstructed (the reconstructed DICOM or NIFTI files, for example, would be found within the primary folder). Another example is the unreconstructed images for a microscopy dataset."
-  }
-
-  console.log(tooltipHighLevelFolders.innerHTML)
-
-  tooltipHighLevelFolders.style.display = "block";
-  tooltipHighLevelFolders.style.top = `${ev.clientY - 10}px`;
-  tooltipHighLevelFolders.style.left = `${ev.clientX + 15}px`;
 }
 
 //// HOVER FOR FULL NAME (FOLDERS WITH WRAPPED NAME IN UI)
@@ -579,51 +552,36 @@ function showFullName(ev, element, text) {
   }
 }
 
-function hidePathHover() {
-  fullPathValue.style.display = "none";
-  fullPathValue.style.top = '-210%';
-  fullPathValue.style.left = '-210%';
-}
-
-function hideNameHover() {
+function hideFullName() {
   fullNameValue.style.display = "none";
-  fullNameValue.style.top = '-230%';
-  fullNameValue.style.left = '-230%';
-}
-
-function hideTooltipHover() {
-  tooltipHighLevelFolders.style.display = "none";
-  tooltipHighLevelFolders.style.top = '-220%';
-  tooltipHighLevelFolders.style.left = '-220%';
+  fullNameValue.style.top = '-250%';
+  fullNameValue.style.left = '-250%';
 }
 
 ///hover over a function for full name
 function hoverForFullName(ev) {
-    var fullName = ev.innerText
+    var fullPath = ev.innerText
+
     // ev.children[1] is the child element folder_desc of div.single-item,
     // which we will put through the overflowing check in showFullName function
-    showFullName(ev, ev.children[1], fullName)
+    showFullName(event, ev.children[1], fullPath)
 }
 
-// // If the document is clicked somewhere
+// If the document is clicked somewhere
 document.addEventListener('onmouseover', function(e){
-  if (e.target.classList.value === "fas fa-file") {
+  if (e.target.classList.value !== "fas fa-file") {
+    hideFullPath()
+  } else {
     hoverForPath(e)
   }
-  // } else if (e.target.classList.value === "fas fa-file") {
-  //   hidePathHover(fullPathValue)
-  // }
-})
+});
 
 document.addEventListener('onmouseover', function(e){
   if (e.target.classList.value === "fas fa-folder") {
     hoverForFullName(e)
-    showhighLevelFolderTooltip(e)
+  } else {
+    hideFullName()
   }
-  // } else {
-  //   hideNameHover()
-  //   hideTooltipHover()
-  // }
 });
 
 
@@ -656,20 +614,17 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (typeof sortedObj[item] !== "object") {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hidePathHover()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
-            if (highLevelFoldersList.includes(item)) {
-              var appendString = appendString + '<div class="single-item" onmouseover="showhighLevelFolderTooltip(this)" onmouseleave="hideTooltipHover()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
-            } else {
-              var appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideNameHover()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
-            }
+            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
         }
+
         $('#items').empty()
         $('#items').html(appendString)
-}
+  }
 
 function loadFileFolder(myPath) {
   var appendString = ""
