@@ -92,7 +92,7 @@ button[disabled]{
     overflow: scroll;
 }
 
-.menu {
+.menu-folder {
     width: 70px;
     height: 45px;
     background-color: #f4f4f4;
@@ -103,6 +103,19 @@ button[disabled]{
     list-style: none;
     position: absolute;
     padding: 5px 5px;
+}
+
+.menu-file {
+  width: 130px;
+  height: 90px;
+  background-color: #f4f4f4;
+  color: #333;
+  border: 1px solid #aaa;
+  box-shadow: 2px 2px 2px #999;
+  border-radius: 3px;
+  list-style: none;
+  position: absolute;
+  padding: 5px 5px;
 }
 
 .hoverPath {
@@ -133,10 +146,16 @@ button[disabled]{
     font-size: 11px;
 }
 
-.menu.off{
+.menu-folder.off{
     display: none;
     top: -200%;
     left: -200%;
+}
+
+.menu-file.off{
+    display: none;
+    top: -210%;
+    left: -210%;
 }
 
 .menu-item{

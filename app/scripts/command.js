@@ -22,7 +22,8 @@ var jsonObjGlobal = {
   },
   "docs": {},
   "protocols": {},
-  "dataset_description.xlsx": "C:/mypath/folder1/sub-folder-1/dataset_description.xlsx",
+  // any file's value is a list [full_path, added description, added metadata, boolean to "Apply description to all files in the folder", boolean to “Apply additional metadata to all files in the folder"]
+  "dataset_description.xlsx": ["C:/mypath/folder1/sub-folder-1/dataset_description.xlsx", "description-example", "additional-metadata-example", "Yes", "No"],
 }
 
 const globalPath = document.getElementById("input-global-path")
@@ -91,7 +92,7 @@ function addFoldersfunction(folderArray, currentLocation) {
         currentLocation[baseName] = {}
         populateJSONObjFolder(currentLocation[baseName], folderArray[i])
 
-        var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+        var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
         $('#items').html(appendString)
 
@@ -127,7 +128,7 @@ function addFilesfunction(fileArray, currentLocation) {
           // if (itemName!==)
 
           currentLocation[baseName] = fileArray[i]
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
           $('#items').html(appendString)
 
@@ -147,21 +148,41 @@ function addFilesfunction(fileArray, currentLocation) {
 //////////////////////////////////////////////////////////////////////////////
 
 
-let menu = null;
-menu = document.querySelector('.menu');
+let menuFolder = null;
+let menuFile = null;
+menuFolder = document.querySelector('.menu-folder');
+menuFile = document.querySelector('.menu-file');
 
-function myFunction(event) {
+function folderContextMenu(event) {
 
-  $(".menu li").unbind().click(function(){
-    if ($(this).attr('id') === "rename") {
+  $(".menu-folder li").unbind().click(function(){
+    if ($(this).attr('id') === "folder-rename") {
         renameFolder(event)
-      } else if ($(this).attr('id') === "delete") {
+      } else if ($(this).attr('id') === "folder-delete") {
         delFolder(event)
       }
      // Hide it AFTER the action was triggered
-     hideMenu()
+     hideMenu("folder")
  });
- hideMenu()
+ hideMenu("folder")
+}
+
+function fileContextMenu(event) {
+
+  $(".menu-file li").unbind().click(function(){
+    if ($(this).attr('id') === "file-rename") {
+        renameFolder(event)
+      } else if ($(this).attr('id') === "file-delete") {
+        delFolder(event)
+      } else if ($(this).attr('id') === "file-metadata") {
+        editDesc()
+      } else if ($(this).attr('id') === "file-description") {
+        editDesc()
+      }
+     // Hide it AFTER the action was triggered
+     hideMenu("file")
+ });
+ hideMenu("file")
 }
 
 
@@ -172,26 +193,40 @@ $(document).bind("contextmenu", function (event) {
     event.preventDefault();
 
     // Show contextmenu
-    showmenu(event)
+    if (event.target.classList.value === "fas fa-folder") {
+      showmenu(event, "folder")
+      hideMenu("file")
+    } else if (event.target.classList.value === "fas fa-file") {
+      showmenu(event, "file")
+      hideMenu("folder")
+    }
 });
 
 
 // If the document is clicked somewhere
 document.addEventListener('contextmenu', function(e){
-  if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
-    hideMenu()
+  if (e.target.classList.value === "fas fa-folder") {
+    showmenu(e, "folder")
+  } else if (e.target.classList.value === "fas fa-file") {
+    showmenu(e, "file")
   } else {
-    showmenu(e)
+    hideMenu("folder")
+    hideMenu("file")
   }
 });
 
 // If the document is clicked somewhere
 document.addEventListener('click', function(e){
   if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
-    hideMenu()
+    hideMenu("folder")
+    hideMenu("file")
     hideFullPath()
   }
 });
+
+function editDesc() {
+  console.log("10")
+}
 
 
 function renameFolder(event1) {
@@ -300,20 +335,33 @@ function delFolder(event2) {
   }
 }
 
-function showmenu(ev){
+function showmenu(ev, category){
     //stop the real right click menu
     ev.preventDefault();
-    //show the custom menu
-    // menu.classList.remove('off');
-    menu.style.display = "block";
-    menu.style.top = `${ev.clientY - 10}px`;
-    menu.style.left = `${ev.clientX + 15}px`;
+    if (category === "folder") {
+      menuFolder.style.display = "block";
+      menuFolder.style.top = `${ev.clientY - 10}px`;
+      menuFolder.style.left = `${ev.clientX + 15}px`;
+    } else {
+      menuFile.style.display = "block";
+      menuFile.style.top = `${ev.clientY - 10}px`;
+      menuFile.style.left = `${ev.clientX + 15}px`;
+    }
+
 }
 
-function hideMenu(){
-  menu.style.display = "none";
-  menu.style.top = '-200%';
-  menu.style.left = '-200%';
+function hideMenu(category){
+
+  if (category === "folder") {
+    menuFolder.style.display = "none";
+    menuFolder.style.top = "-200%";
+    menuFolder.style.left = '-200%';
+  } else {
+    menuFile.style.display = "block";
+    menuFile.style.top = "-210%";
+    menuFile.style.left = "-210%";
+  }
+
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -460,7 +508,7 @@ function drop(ev) {
             } else {
               myPath[itemName] = itemPath
 
-              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
               $(appendString).appendTo(ev.target);
 
               listItems(myPath)
@@ -470,7 +518,7 @@ function drop(ev) {
       } else {
           myPath[itemName] = itemPath
 
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -498,7 +546,7 @@ function drop(ev) {
 
           myPath[itemName] = folderJsonObject
 
-          var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="myFunction(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder" oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -535,7 +583,7 @@ function hoverForPath(ev) {
 
     // get full path from JSON object
     var fullPath = myPath[ev.innerText]
-    showFullPath(event, fullPath)
+    showFullPath(event, fullPath[0])
 }
 
 //// HOVER FOR FULL NAME (FOLDERS WITH WRAPPED NAME IN UI)
@@ -592,11 +640,11 @@ function sortObjByKeys(object) {
   const orderedFolders = {};
   const orderedFiles = {};
   Object.keys(object).sort().forEach(function(key) {
-    if (typeof object[key] === "object") {
+  if (Array.isArray(object[key])) {
+    orderedFiles[key] = object[key]
+  } else {
       orderedFolders[key] = object[key];
-    } else if (typeof object[key] === "string") {
-      orderedFiles[key] = object[key]
-    }
+  }
   });
   const orderedObject = {
     ...orderedFolders,
@@ -613,12 +661,12 @@ function listItems(jsonObj) {
         var sortedObj = sortObjByKeys(jsonObj)
 
         for (var item in sortedObj) {
-          if (typeof sortedObj[item] !== "object") {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="myFunction(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+          if (Array.isArray(sortedObj[item])) {
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
-            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="myFunction(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="folderContextMenu(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
         }
 
