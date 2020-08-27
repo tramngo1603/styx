@@ -362,7 +362,7 @@ function renameFolder(event1) {
     highLevelFolderBool = false
   }
 
-  if (event1.classList.value === "far fa-file-alt") {
+  if (event1.classList.value === "far fa-file") {
     promptVar = "file";
     type = "file";
   } else if (event1.classList.value === "fas fa-folder") {
@@ -380,47 +380,54 @@ function renameFolder(event1) {
     alert("High-level SPARC folders cannot be renamed!")
   } else {
     // show input box for new name
-    prompt({
-      title: 'Renaming '+ promptVar + " " + currentName +': ...',
-      label: 'Enter a new name:',
-      value: nameWithoutExtension,
-      inputAttrs: {
-        type: 'text'
+
+    bootbox.prompt({
+      title: '<h6>Renaming '+ promptVar + ":" + '</h6>',
+      buttons: {
+        cancel: {
+              label: '<i class="fa fa-times"></i> Cancel'
+          },
+          confirm: {
+              label: '<i class="fa fa-check"></i> Save',
+              className: 'btn-success'
+          }
       },
-      type: 'input'
-    })
-    .then((r) => {
-      if(r !== null && r!== "") {
-        if (type==="file") {
-          newName = r.trim() + currentName.slice(currentName.indexOf("."))
-        } else {
-          newName = r.trim()
-        }
+      value: nameWithoutExtension,
+      centerVertical: true,
 
-        /// assign new name to folder in the UI
-        event1.parentElement.parentElement.innerText = newName
+      callback: function (r) {
+          console.log(r)
+          if(r!==null){
+            if (type==="file") {
+              newName = r.trim() + currentName.slice(currentName.indexOf("."))
+            } else {
+              newName = r.trim()
+            }
 
-        /// update jsonObjGlobal with the new name
-        /// get current location first
-        var currentPath = globalPath.value
-        var jsonPathArray = currentPath.split("/")
-        var filtered = jsonPathArray.filter(function (el) {
-          return el != "";
-        });
+            /// assign new name to folder in the UI
+            event1.parentElement.parentElement.innerText = newName
 
-        // updating object
-        var myPath = getRecursivePath(filtered)
-        storedValue = myPath[currentName]
-        delete myPath[currentName];
-        myPath[newName] = storedValue
+            /// update jsonObjGlobal with the new name
+            /// get current location first
+            var currentPath = globalPath.value
+            var jsonPathArray = currentPath.split("/")
+            var filtered = jsonPathArray.filter(function (el) {
+              return el != "";
+            });
 
-        listItems(myPath)
-        getInFolder(myPath)
-        console.log(myPath)
-      }
-    })
-    .catch(console.error);
-  }
+            // updating object
+            var myPath = getRecursivePath(filtered)
+            storedValue = myPath[currentName]
+            delete myPath[currentName];
+            myPath[newName] = storedValue
+
+            listItems(myPath)
+            getInFolder(myPath)
+            console.log(myPath)
+          }
+    }
+  })
+    }
 }
 
 function delFolder(event2) {
@@ -436,21 +443,31 @@ function delFolder(event2) {
   if (highLevelFolderBool) {
     alert("High-level SPARC folders cannot be deleted!")
   } else {
-    /// update jsonObjGlobal
-    var currentPath = globalPath.value
-    var jsonPathArray = currentPath.split("/")
-    var filtered = jsonPathArray.filter(function (element) {
-      return element != "";
-    });
+    bootbox.confirm({
+      title: "Deleting a folder...",
+      message: "Are you sure you want to delete this folder and all of its files?",
+      onEscape: true,
+      centerVertical: true,
+      callback: function(result) {
+      if(result !== null && result === true) {
+        /// update jsonObjGlobal
+        var currentPath = globalPath.value
+        var jsonPathArray = currentPath.split("/")
+        var filtered = jsonPathArray.filter(function (element) {
+          return element != "";
+        });
 
-    var myPath = getRecursivePath(filtered)
+        var myPath = getRecursivePath(filtered)
 
-    // update Json object with new folder created
-    delete myPath[itemToDelete];
+        // update Json object with new folder created
+        delete myPath[itemToDelete];
 
-    listItems(myPath)
-    getInFolder(myPath)
-  }
+        listItems(myPath)
+        getInFolder(myPath)
+      }
+    }
+  })
+}
 }
 
 function showmenu(ev, category){
