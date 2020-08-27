@@ -23,8 +23,8 @@ var jsonObjGlobal = {
   },
   "docs": {},
   "protocols": {},
-  // any file's value is a list [full_path, added description, added metadata, boolean to "Apply description to all files in the folder", boolean to “Apply additional metadata to all files in the folder"]
-  "dataset_description.xlsx": ["C:/mypath/folder1/sub-folder-1/dataset_description.xlsx", "description-example", "additional-metadata-example", "Yes", "No"],
+  // any file's value is a list [full_path, added description, added metadata]
+  "dataset_description.xlsx": ["C:/mypath/folder1/sub-folder-1/dataset_description.xlsx", "description-example", "additional-metadata-example"],
 }
 
 const globalPath = document.getElementById("input-global-path")
@@ -278,7 +278,7 @@ function editDesc(ev) {
           inputType: 'textarea',
           callback: function (r) {
             if (r !== null) {
-              myPath[fileName][2] = r
+              myPath[fileName][2] = r.trim()
               bootbox.confirm({
                 message: "Would you like to add this additional metadata to all the files in this folder?",
                 buttons: {
@@ -293,7 +293,13 @@ function editDesc(ev) {
                 },
                 centerVertical: true,
                 callback: function (confirm) {
-                  myPath[fileName][4] = confirm
+                  if (confirm) {
+                    for (var element in myPath) {
+                      if (Array.isArray(myPath[element])) {
+                        myPath[element][2] = r.trim()
+                      }
+                    }
+                  }
                   console.log(myPath);
                 }
               })
@@ -316,7 +322,7 @@ function editDesc(ev) {
           centerVertical: true,
           callback: function (r) {
             if (r !== null) {
-              myPath[fileName][1] = r
+              myPath[fileName][1] = r.trim()
               bootbox.confirm({
                 message: "Would you like to add this description to all the files in this folder?",
                 buttons: {
@@ -331,8 +337,14 @@ function editDesc(ev) {
                 },
                 centerVertical: true,
                 callback: function (confirm) {
-                    myPath[fileName][3] = confirm
-                    console.log(myPath)
+                  if (confirm) {
+                    for (var element in myPath) {
+                      if (Array.isArray(myPath[element])) {
+                        myPath[element][1] = r.trim()
+                      }
+                    }
+                  }
+                  console.log(myPath)
                 }
               })
             }
