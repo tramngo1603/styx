@@ -19,12 +19,6 @@ body {
   color: white;
 } */
 
-.topbar-button:focus {
-  background-color: #258193;
-  border: none;
-  color: white;
-
-}
 
 .button-grp button {
     border: 1px #DBDBDB solid;
@@ -52,6 +46,9 @@ button[disabled]{
     grid-template-columns: 150px auto; */
     width: 100%;
     height: calc(100vh - 70px);
+    padding: 20px;
+    /* height: calc(100vh - 110px); */
+    /* overflow: scroll; */
 }
 .sidebar {
     background-color: #258193;
@@ -93,8 +90,8 @@ button[disabled]{
 }
 
 .menu-folder {
-    width: 70px;
-    height: 45px;
+    width: 80px;
+    height: 50px;
     background-color: #f4f4f4;
     color: #333;
     border: 1px solid #aaa;
@@ -106,8 +103,8 @@ button[disabled]{
 }
 
 .menu-file {
-  width: 130px;
-  height: 90px;
+  width: 140px;
+  height: 70px;
   background-color: #f4f4f4;
   color: #333;
   border: 1px solid #aaa;
@@ -116,6 +113,37 @@ button[disabled]{
   list-style: none;
   position: absolute;
   padding: 5px 5px;
+}
+
+.modal-content textarea{
+  font-size: 11px !important;
+}
+
+.modal-body {
+  padding: 14px 14px;
+}
+
+.modal-content title{
+  font-size: 12px !important;
+}
+
+.modal-header {
+  padding: 10px 12px !important;
+}
+
+.modal-footer {
+  padding: 10px 12px !important;
+}
+
+.modal-footer button{
+  /* width: 30% !important; */
+  padding: 4px 10px !important;
+  font-weight: 400 !important;
+  font-size: 14px !important;
+}
+
+.dropdown-item {
+  font-size: 13px !important;
 }
 
 .hoverPath {
@@ -194,8 +222,9 @@ button[disabled]{
   display: block;
 }
 
-i.fas.fa-file {
-  height: 37px !important
+i.far.fa-file-alt {
+  height: 37px !important;
+
 }
 
 .folder {
@@ -221,7 +250,7 @@ i.fas.fa-file {
     line-height: 1.5;
 }
 .blue {
-    color: #6CCCF6;
+    color:#FFA500;
 }
 
 .file {

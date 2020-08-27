@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.5.3",
+    "bootbox": "^5.4.0",
     "electron": "^9.2.0",
     "electron-prompt": "^1.6.0",
     "is-directory": "^0.3.1",

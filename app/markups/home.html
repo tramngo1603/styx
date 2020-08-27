@@ -7,19 +7,11 @@
     <title>BExplorer File Manager</title>
     <link rel="stylesheet" href="../css/all.css">
     <link rel="stylesheet" href="../css/main.css">
-
+    <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
 </head>
 <body>
     <div class="main-window">
-      <div style="margin-top: 10px">
-        <button id="button-back" style="margin-right: 50px;margin-left: 10px; width: 50px; height: 30px;border: 1px #DBDBDB solid;border-radius: 7px;font-size: 12px;background-color: #DCDCDC;">Back</button>
-        <i class="fas fa-home"><input style="border-radius: 3px;margin-left: 3px; margin-right: 50px; border: 1px solid black; font-family: sans-serif;font-size: 12px; width: 100%" id="input-global-path" value="/" readonly></input></i>
-        <button class="topbar-button" id="new-folder" style="margin-right: 50px;margin-left: 50px;width: 80px; height: 30px;border: 1px #DCDCDC solid;border-radius: 7px;font-size: 12px;background-color: #DCDCDC;">New folder</button>
-        <button class="topbar-button" id="add-files" style="margin-right: 5px;width: 80px; height: 30px;border: 1px #DCDCDC solid;border-radius: 7px;font-size: 12px; background-color: #DCDCDC;">Add files</button>
-        <button class="topbar-button" id="add-folders" style="margin-right: 5px;width: 80px; height: 30px;border: 1px #DCDCDC solid;border-radius: 7px;font-size: 12px; background-color: #DCDCDC;">Add folders</button>
-      </div>
 
-     <!-- <div class="menu" id="context-menu" oncontextmenu="return showContextMenu(event);"> -->
         <ul class="menu-folder off">
           <li class="menu-item" id="folder-delete"><i class="far fa-trash-alt fa-fw"></i>Delete</li>
           <li class="menu-item" id="folder-rename"><i class="fas fa-edit fa-fw"></i>Rename</li>
@@ -28,33 +20,54 @@
         <ul class="menu-file off">
           <li class="menu-item" id="file-delete"><i class="far fa-trash-alt fa-fw"></i>Delete</li>
           <li class="menu-item" id="file-rename"><i class="fas fa-edit fa-fw"></i>Rename</li>
-          <li class="menu-item" id="file-metadata"><i class="fas fa-edit fa-fw"></i>Add/Edit Metadata</li>
-          <li class="menu-item" id="file-description"><i class="fas fa-edit fa-fw"></i>Add/Edit Description</li>
+          <li class="menu-item" id="file-description"><i class="far fa-plus-square fa-fw"></i>Manage description</li>
 
         </ul>
 
-      <!-- </div>  -->
         <span class="hoverPath" style="display: none"></span>
         <span class="hoverFullName" style="display: none"></span>
 
-        <div class="window">
-            <div id="items" style="width:100%;height: 100%" ondrop="drop(event);" ondragover="allowDrop(event);">
 
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Code</div></div>
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Primary</div></div>
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Protocols</div></div>
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Source</div></div>
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Docs</div></div>
-                <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Derivative</div></div>
+          <button id="button-back" style="margin-right: 20px;margin-left: 10px; width: 50px; height: 40px;border: 1px #DBDBDB solid;border-radius: 7px;font-size: 13px;background-color: #DCDCDC;">Back</button>
+          <i class="fas fa-home"><input style="border-radius: 3px;margin-left: 3px; margin-right: 50px;height: 30px; border: 1px solid #A9A9A9; font-family: sans-serif;font-size: 13px;min-width: 300px;max-width:100%" id="input-global-path" value="/" readonly></input></i>
 
+        <hr>
+
+        <div style="float:right">
+            <button class="topbar-button" id="new-folder" style="border: 1px #A9A9A9 solid;border-radius: 3px;margin-right: 5px;font-size: 12px;background-color: transparent;height:auto;padding: 8px 8px"><i class="fas fa-plus fa-fw"></i><b>New folder</b></button>
+            <div class="btn-group" role="group">
+              <button id="btnGroupDrop1" type="button" style="border: 1px #A9A9A9 solid;border-radius: 3px;font-size: 12px;background-color: transparent;height:auto;padding: 8px 8px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-arrow-up fa-fw"></i><b>Upload</b>
+              </button>
+              <div class="dropdown-menu" style="padding: 6px 2px; overflow-y:visible;" aria-labelledby="btnGroupDrop1">
+                <a class="dropdown-item" id="add-files" href="#">Choose files</a>
+                <a class="dropdown-item" id="add-folders" href="#">Choose folders</a>
+              </div>
             </div>
         </div>
+
+          <div id="items" style="width:100%;height: 100%;scrollable:none" ondrop="drop(event);" ondragover="allowDrop(event);">
+
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Code</div></div>
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Primary</div></div>
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Protocols</div></div>
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Source</div></div>
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Docs</div></div>
+              <div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">Derivative</div></div>
+
+          </div>
+        <!-- </div> -->
      </div>
-     <!-- <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script> -->
-
-
 
      <script>window.$ = window.jQuery = require('jquery')</script>
+
+     <!-- Bootstrap 4 dependency -->
+    <script src="https://getbootstrap.com/docs/4.1/assets/js/vendor/popper.min.js"></script>
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- bootbox code -->
+    <script src="./bootbox/dist/bootbox.min.js"></script>
+    <script src="./bootbox/dist/bootbox.locales.min.js"></script>
      <script src="../scripts/command.js" type="text/javascript"></script>
 </body>
 </html>

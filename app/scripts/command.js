@@ -6,6 +6,7 @@ const prompt = require('electron-prompt');
 const {ipcRenderer} = require('electron')
 const dialog = require('electron').remote.dialog
 const electron = require('electron')
+const bootbox = require('bootbox')
 
 var backFolder = []
 var forwardFolder =[]
@@ -34,6 +35,8 @@ const addFolders = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
 var fullPathValue = document.querySelector(".hoverPath")
 var fullNameValue = document.querySelector(".hoverFullName")
+
+
 
 function getGlobalPath() {
   var currentPath = globalPath.value
@@ -115,7 +118,7 @@ function addFilesfunction(fileArray, currentLocation) {
       } else {
         var duplicate = false;
         for (var objKey in currentLocation) {
-          if (typeof currentLocation[objKey] !== "object") {
+          if (Array.isArray(currentLocation[objKey])) {
             if (baseName === objKey) {
               duplicate = true
               break
@@ -125,10 +128,8 @@ function addFilesfunction(fileArray, currentLocation) {
         if (duplicate) {
           alert('Duplicate file name: ' + baseName)
         } else {
-          // if (itemName!==)
-
-          currentLocation[baseName] = fileArray[i]
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
+          currentLocation[baseName] = [fileArray[i], "", "", false, false]
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
           $('#items').html(appendString)
 
@@ -174,10 +175,8 @@ function fileContextMenu(event) {
         renameFolder(event)
       } else if ($(this).attr('id') === "file-delete") {
         delFolder(event)
-      } else if ($(this).attr('id') === "file-metadata") {
-        editDesc()
       } else if ($(this).attr('id') === "file-description") {
-        editDesc()
+        editDesc(event)
       }
      // Hide it AFTER the action was triggered
      hideMenu("file")
@@ -196,7 +195,7 @@ $(document).bind("contextmenu", function (event) {
     if (event.target.classList.value === "fas fa-folder") {
       showmenu(event, "folder")
       hideMenu("file")
-    } else if (event.target.classList.value === "fas fa-file") {
+    } else if (event.target.classList.value === "far fa-file-alt") {
       showmenu(event, "file")
       hideMenu("folder")
     }
@@ -207,7 +206,7 @@ $(document).bind("contextmenu", function (event) {
 document.addEventListener('contextmenu', function(e){
   if (e.target.classList.value === "fas fa-folder") {
     showmenu(e, "folder")
-  } else if (e.target.classList.value === "fas fa-file") {
+  } else if (e.target.classList.value === "far fa-file-alt") {
     showmenu(e, "file")
   } else {
     hideMenu("folder")
@@ -217,15 +216,134 @@ document.addEventListener('contextmenu', function(e){
 
 // If the document is clicked somewhere
 document.addEventListener('click', function(e){
-  if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "fas fa-file") {
+  if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "far fa-file-alt") {
     hideMenu("folder")
     hideMenu("file")
     hideFullPath()
   }
 });
 
-function editDesc() {
-  console.log("10")
+function editDesc(ev) {
+
+  var fileName = ev.parentElement.parentElement.innerText
+
+  /// update jsonObjGlobal with the new name
+  /// get current location first
+
+  var currentPath = globalPath.value
+  var jsonPathArray = currentPath.split("/")
+  var filtered = jsonPathArray.filter(function (el) {
+    return el != "";
+  });
+  var myPath = getRecursivePath(filtered)
+
+  bootbox.prompt({
+    title: "<h6>Please choose an option: </h6>",
+    buttons: {
+      cancel: {
+            label: '<i class="fa fa-times"></i> Cancel'
+        },
+        confirm: {
+            label: '<i class="fa fa-check"></i> Continue',
+            className: 'btn-success'
+        }
+    },
+    centerVertical: true,
+    size: 'small',
+    inputType: 'radio',
+    inputOptions: [{
+        text: '<h7>Add/edit description</h7>',
+        value: 'description',
+        className: 'bootbox-input-text'
+    },
+    {
+        text: 'Add/edit additional metadata',
+        value: 'metadata'
+    }],
+    callback: function (result) {
+      if (result==="metadata") {
+        bootbox.prompt({
+          title: "<h6>Enter additional metadata: </h6>",
+          centerVertical: true,
+          size: 'small',
+          buttons: {
+            cancel: {
+                  label: '<i class="fa fa-times"></i> Cancel'
+              },
+            confirm: {
+              label: '<i class="fa fa-check"></i> Save',
+              className: 'btn-success',
+            }
+          },
+          inputType: 'textarea',
+          callback: function (r) {
+            if (r !== null) {
+              myPath[fileName][2] = r
+              bootbox.confirm({
+                message: "Would you like to add this additional metadata to all the files in this folder?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes, apply to all',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                centerVertical: true,
+                callback: function (confirm) {
+                  myPath[fileName][4] = confirm
+                  console.log(myPath);
+                }
+              })
+            }
+          }
+      });
+      } else if (result==="description"){
+        bootbox.prompt({
+          title: "<h6>Enter a description: </h6>",
+          inputType: 'textarea',
+          buttons: {
+            cancel: {
+                  label: '<i class="fa fa-times"></i> Cancel'
+              },
+            confirm: {
+              label: '<i class="fa fa-check"></i> Save',
+              className: 'btn-success',
+            }
+          },
+          centerVertical: true,
+          callback: function (r) {
+            if (r !== null) {
+              myPath[fileName][1] = r
+              bootbox.confirm({
+                message: "Would you like to add this description to all the files in this folder?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes, apply to all',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                centerVertical: true,
+                callback: function (confirm) {
+                    myPath[fileName][3] = confirm
+                    console.log(myPath)
+                }
+              })
+            }
+          }
+      });
+      }
+    }
+  });
+
+    listItems(myPath)
+    getInFolder(myPath)
 }
 
 
@@ -235,7 +353,7 @@ function renameFolder(event1) {
   var type;
   var newName;
   var currentName = event1.parentElement.parentElement.innerText
-  var withoutExtension;
+  var nameWithoutExtension;
   var highLevelFolderBool;
 
   if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(currentName)) {
@@ -244,7 +362,7 @@ function renameFolder(event1) {
     highLevelFolderBool = false
   }
 
-  if (event1.classList.value === "fas fa-file") {
+  if (event1.classList.value === "far fa-file-alt") {
     promptVar = "file";
     type = "file";
   } else if (event1.classList.value === "fas fa-folder") {
@@ -253,9 +371,9 @@ function renameFolder(event1) {
   }
 
   if (type==="file") {
-    withoutExtension = currentName.slice(0,currentName.indexOf("."))
+    nameWithoutExtension = currentName.slice(0,currentName.indexOf("."))
   } else {
-    withoutExtension = currentName
+    nameWithoutExtension = currentName
   }
 
   if (highLevelFolderBool) {
@@ -265,7 +383,7 @@ function renameFolder(event1) {
     prompt({
       title: 'Renaming '+ promptVar + " " + currentName +': ...',
       label: 'Enter a new name:',
-      value: withoutExtension,
+      value: nameWithoutExtension,
       inputAttrs: {
         type: 'text'
       },
@@ -504,11 +622,11 @@ function drop(ev) {
           alert('Duplicate file name: ' + itemName)
         } else {
             if (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(itemName)) {
-              alert("Only metadata files can be added to this level!")
+              alert("Only SPARC metadata files are allowed in the high-level dataset folder:\n\n- dataset_description.xslx/.csv/.json\n- submission.xslx/.csv/.json\n- subjects.xslx/.csv/.json\n- samples.xslx/.csv/.json\n- CHANGES.txt\n- README.txt")
             } else {
-              myPath[itemName] = itemPath
+              myPath[itemName] = [itemPath, "", "", false, false]
 
-              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+              var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
               $(appendString).appendTo(ev.target);
 
               listItems(myPath)
@@ -516,9 +634,9 @@ function drop(ev) {
             }
         }
       } else {
-          myPath[itemName] = itemPath
+          myPath[itemName][0] = itemPath
 
-          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="fas fa-file"  oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
+          var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
 
           listItems(myPath)
@@ -617,7 +735,7 @@ function hoverForFullName(ev) {
 
 // If the document is clicked somewhere
 document.addEventListener('onmouseover', function(e){
-  if (e.target.classList.value !== "fas fa-file") {
+  if (e.target.classList.value !== "far fa-file-alt") {
     hideFullPath()
   } else {
     hoverForPath(e)
@@ -662,7 +780,7 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
@@ -681,7 +799,7 @@ function loadFileFolder(myPath) {
 
   for (var item in sortedObj) {
     if (typeof sortedObj[item] === "string") {
-      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="fas fa-file" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
     }
     else {
       appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
