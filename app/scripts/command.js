@@ -11,6 +11,15 @@ const bootbox = require('bootbox')
 var backFolder = []
 var forwardFolder =[]
 
+var highLevelFolderToolTip = {
+  "code": "code: This folder contains all the source code used in the study (e.g., Python, MATLAB, etc.)",
+  "derivative": "derivative: This folder contains data files derived from raw data (e.g., processed image stacks that are annotated via the MBF tools, segmentation files, smoothed overlays of current and voltage that demonstrate a particular effect, etc.)",
+  "docs": "docs: This folder contains all other supporting files that don't belong to any of the other folders (e.g., a representative image for the dataset, figures, etc.)",
+  "source": "source: This folder contains very raw data i.e. raw or untouched files from an experiment. For example, this folder may include the “truly” raw k-space data for an MR image that has not yet been reconstructed (the reconstructed DICOM or NIFTI files, for example, would be found within the primary folder). Another example is the unreconstructed images for a microscopy dataset.",
+  "primary": "primary: This folder contains all folders and files for experimental subjects and/or samples. All subjects will have a unique folder with a standardized name the same as the names or IDs as referenced in the subjects metadata file. Within each subject folder, the experimenter may choose to include an optional “session” folder if the subject took part in multiple experiments/ trials/ sessions. The resulting data is contained within data type-specific (Datatype) folders within the subject (or session) folders. The SPARC program’s Data Sharing Committee defines 'raw' (primary) data as one of the types of data that should be shared. This covers minimally processed raw data, e.g. time-series data, tabular data, clinical imaging data, genomic, metabolomic, microscopy data, which can also be included within their own folders.",
+  "protocol": "protocol: This folder contains supplementary files to accompany the experimental protocols submitted to Protocols.io. Please note that this is not a substitution for the experimental protocol which must be submitted to <b><a href='https://www.protocols.io/groups/sparc'> Protocols.io/sparc </a></b>."
+}
+
 var jsonObjGlobal = {
   "code": {
     'empty_directory': {
@@ -35,7 +44,6 @@ const addFolders = document.getElementById("add-folders")
 const contextMenu = document.getElementById("mycontext")
 var fullPathValue = document.querySelector(".hoverPath")
 var fullNameValue = document.querySelector(".hoverFullName")
-
 
 
 function getGlobalPath() {
@@ -73,7 +81,10 @@ addFolders.addEventListener("click", function() {
 function addFoldersfunction(folderArray, currentLocation) {
 
   if (globalPath.value === "/") {
-    alert("Additional folders cannot be added to this level!")
+    bootbox.alert({
+      message: "Other non-SPARC folders cannot be added to this dataset level!",
+      centerVertical: true
+    })
   } else {
 
     // check for duplicates/folders with the same name
@@ -89,7 +100,10 @@ function addFoldersfunction(folderArray, currentLocation) {
         }
       }
       if (duplicate) {
-        alert('Duplicate folder name: ' + baseName)
+        bootbox.alert({
+          message: 'Duplicate folder name: ' + baseName,
+          centerVertical: true
+        })
       } else {
 
         currentLocation[baseName] = {}
@@ -113,7 +127,10 @@ function addFilesfunction(fileArray, currentLocation) {
       var baseName = path.basename(fileArray[i])
 
       if (globalPath.value === "/" && (!["dataset_description.xlsx", "dataset_description.csv", "dataset_description.json", "submission.xlsx", "submission.json", "submission.csv", "samples.xlsx", "samples.csv", "samples.json", "subjects.xlsx", "subjects.csv", "subjects.json", "CHANGES.txt", "README.txt"].includes(baseName))) {
-        alert("Only SPARC metadata files are allowed in the high-level dataset folder:\n\n- dataset_description.xslx/.csv/.json\n- submission.xslx/.csv/.json\n- subjects.xslx/.csv/.json\n- samples.xslx/.csv/.json\n- CHANGES.txt\n- README.txt")
+        bootbox.alert({
+          message: "Invalid file(s). Only SPARC metadata files are allowed in the high-level dataset folder.<br> <ul><li>dataset_description (.xslx/.csv/.json)</li><li>submission (.xslx/.csv/.json)</li><li>subjects (.xslx/.csv/.json)</li><li>samples (.xslx/.csv/.json)</li><li>CHANGES.txt</li><li>README.txt</li></ul>",
+          centerVertical: true
+        })
         break
       } else {
         var duplicate = false;
@@ -126,7 +143,10 @@ function addFilesfunction(fileArray, currentLocation) {
           }
         }
         if (duplicate) {
-          alert('Duplicate file name: ' + baseName)
+          bootbox.alert({
+            message: 'Duplicate file name: ' + baseName,
+            centerVertical: true
+          })
         } else {
           currentLocation[baseName] = [fileArray[i], "", "", false, false]
           var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
@@ -153,6 +173,7 @@ let menuFolder = null;
 let menuFile = null;
 menuFolder = document.querySelector('.menu-folder');
 menuFile = document.querySelector('.menu-file');
+menuHighLevelFolders = document.querySelector('.menu-high-level-folder');
 
 function folderContextMenu(event) {
 
@@ -161,11 +182,31 @@ function folderContextMenu(event) {
         renameFolder(event)
       } else if ($(this).attr('id') === "folder-delete") {
         delFolder(event)
+      } else if ($(this).attr('id') === "tooltip-folders") {
+        showTooltips(event)
       }
      // Hide it AFTER the action was triggered
      hideMenu("folder")
+     hideMenu("high-level-folder")
+
  });
+
+ $(".menu-high-level-folder li").unbind().click(function(){
+   if ($(this).attr('id') === "folder-rename") {
+       renameFolder(event)
+     } else if ($(this).attr('id') === "folder-delete") {
+       delFolder(event)
+     } else if ($(this).attr('id') === "tooltip-folders") {
+       showTooltips(event)
+     }
+    // Hide it AFTER the action was triggered
+    hideMenu("folder")
+    hideMenu("high-level-folder")
+
+});
+
  hideMenu("folder")
+ hideMenu("high-level-folder")
 }
 
 function fileContextMenu(event) {
@@ -191,33 +232,61 @@ $(document).bind("contextmenu", function (event) {
     // Avoid the real one
     event.preventDefault();
 
+    /// check for high level folders
+    var highLevelFolderBool = false
+    var folderName = event.target.parentElement.parentElement.innerText
+    if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(folderName)) {
+      highLevelFolderBool = true
+    }
+
     // Show contextmenu
     if (event.target.classList.value === "fas fa-folder") {
-      showmenu(event, "folder")
-      hideMenu("file")
+
+      if (highLevelFolderBool) {
+        showmenu(event, "high-level-folder")
+        hideMenu("file")
+      } else {
+        showmenu(event, "folder")
+        hideMenu("file")
+      }
     } else if (event.target.classList.value === "far fa-file-alt") {
       showmenu(event, "file")
       hideMenu("folder")
+      hideMenu("high-level-folder")
     }
 });
 
 
 // If the document is clicked somewhere
 document.addEventListener('contextmenu', function(e){
-  if (e.target.classList.value === "fas fa-folder") {
-    showmenu(e, "folder")
-  } else if (e.target.classList.value === "far fa-file-alt") {
-    showmenu(e, "file")
-  } else {
-    hideMenu("folder")
-    hideMenu("file")
+
+  /// check for high level folders
+  var highLevelFolderBool = false
+  var folderName = event.target.parentElement.parentElement.innerText
+  if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(folderName)) {
+    highLevelFolderBool = true
   }
+
+  if (e.target.classList.value === "fas fa-folder") {
+    if (highLevelFolderBool) {
+      showmenu(e, "high-level-folder")
+    } else {
+    showmenu(e, "folder")
+  }
+  } else if (e.target.classList.value === "far fa-file-alt") {
+      showmenu(e, "file")
+    } else {
+      hideMenu("folder")
+      hideMenu("high-level-folder")
+      hideMenu("file")
+    }
 });
 
 // If the document is clicked somewhere
 document.addEventListener('click', function(e){
   if (e.target.classList.value !== "fas fa-folder" && e.target.classList.value !== "far fa-file-alt") {
     hideMenu("folder")
+    hideMenu("high-level-folder")
     hideMenu("file")
     hideFullPath()
   }
@@ -358,7 +427,6 @@ function editDesc(ev) {
     getInFolder(myPath)
 }
 
-
 function renameFolder(event1) {
 
   var promptVar;
@@ -367,6 +435,7 @@ function renameFolder(event1) {
   var currentName = event1.parentElement.parentElement.innerText
   var nameWithoutExtension;
   var highLevelFolderBool;
+  var duplicate = false
 
   if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(currentName)) {
     highLevelFolderBool = true
@@ -374,7 +443,7 @@ function renameFolder(event1) {
     highLevelFolderBool = false
   }
 
-  if (event1.classList.value === "far fa-file") {
+  if (event1.classList.value === "far fa-file-alt") {
     promptVar = "file";
     type = "file";
   } else if (event1.classList.value === "fas fa-folder") {
@@ -389,7 +458,10 @@ function renameFolder(event1) {
   }
 
   if (highLevelFolderBool) {
-    alert("High-level SPARC folders cannot be renamed!")
+    bootbox.alert({
+      message: "High-level SPARC folders cannot be renamed!",
+      centerVertical: true
+    })
   } else {
     // show input box for new name
 
@@ -409,12 +481,52 @@ function renameFolder(event1) {
       centerVertical: true,
 
       callback: function (r) {
-          console.log(r)
           if(r!==null){
+
             if (type==="file") {
+
               newName = r.trim() + currentName.slice(currentName.indexOf("."))
+
+              // check for duplicate or files with the same name
+              var itemDivElements = document.getElementById("items").children
+              for (var i=0;i<itemDivElements.length;i++) {
+                if (newName === itemDivElements[i].innerText) {
+                  duplicate = true
+                  break
+                }
+              }
+              if (duplicate) {
+                bootbox.alert({
+                  message:"Duplicate file name: " + newName,
+                  centerVertical: true
+                })
+              } else {
+                if (globalPath.value === "/" && !(["dataset_description", "submission", "README", "CHANGES", "samples", "subjects"].includes(newName))) {
+                  bootbox.alert({
+                    message:"Invalid name for a metadata file! Required names for metadata files are: <b>'dataset_description', 'submission', 'samples', 'subjects', 'README', 'CHANGES'</b>. Please try renaming your file again.",
+                    centerVertical: true
+                  })
+                }
+              }
             } else {
-              newName = r.trim()
+                // check for duplicate or files with the same name
+                var itemDivElements = document.getElementById("items").children
+                for (var i=0;i<itemDivElements.length;i++) {
+                  if (r.trim() === itemDivElements[i].innerText) {
+                    duplicate = true
+                    break
+                  }
+                }
+
+                if (duplicate) {
+                  bootbox.alert({
+                    message:"Duplicate folder name: " + r.trim(),
+                    centerVertical: true
+                  })
+                  return
+                } else {
+                  newName = r.trim()
+                }
             }
 
             /// assign new name to folder in the UI
@@ -445,6 +557,8 @@ function renameFolder(event1) {
 function delFolder(event2) {
 
   var itemToDelete = event2.parentElement.parentElement.innerText
+  var promptVar;
+  var highLevelFolderBool;
 
   if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(itemToDelete)) {
     highLevelFolderBool = true
@@ -452,12 +566,21 @@ function delFolder(event2) {
     highLevelFolderBool = false
   }
 
+  if (event2.classList.value === "far fa-file-alt") {
+    promptVar = "file";
+  } else if (event2.classList.value === "fas fa-folder") {
+    promptVar = "folder";
+  }
+
   if (highLevelFolderBool) {
-    alert("High-level SPARC folders cannot be deleted!")
+    bootbox.alert({
+      message: "High-level SPARC folders cannot be deleted!",
+      centerVertical: true
+    })
   } else {
     bootbox.confirm({
-      title: "Deleting a folder...",
-      message: "Are you sure you want to delete this folder and all of its files?",
+      title: "Deleting a "+ promptVar + "...",
+      message: "Are you sure you want to delete this " + promptVar + "?",
       onEscape: true,
       centerVertical: true,
       callback: function(result) {
@@ -482,6 +605,16 @@ function delFolder(event2) {
 }
 }
 
+function showTooltips(ev) {
+  var folderName = ev.parentElement.parentElement.innerText;
+  // console.log(highLevelFolderToolTip[folderName])
+  var options = {
+    "type": "info",
+    "message": highLevelFolderToolTip[folderName]
+  }
+  dialog.showMessageBox(options)
+}
+
 function showmenu(ev, category){
     //stop the real right click menu
     ev.preventDefault();
@@ -489,12 +622,15 @@ function showmenu(ev, category){
       menuFolder.style.display = "block";
       menuFolder.style.top = `${ev.clientY - 10}px`;
       menuFolder.style.left = `${ev.clientX + 15}px`;
+    } else if (category === "high-level-folder") {
+      menuHighLevelFolders.style.display = "block";
+      menuHighLevelFolders.style.top = `${ev.clientY - 10}px`;
+      menuHighLevelFolders.style.left = `${ev.clientX + 15}px`;
     } else {
-      menuFile.style.display = "block";
-      menuFile.style.top = `${ev.clientY - 10}px`;
-      menuFile.style.left = `${ev.clientX + 15}px`;
-    }
-
+        menuFile.style.display = "block";
+        menuFile.style.top = `${ev.clientY - 10}px`;
+        menuFile.style.left = `${ev.clientX + 15}px`;
+      }
 }
 
 function hideMenu(category){
@@ -503,12 +639,15 @@ function hideMenu(category){
     menuFolder.style.display = "none";
     menuFolder.style.top = "-200%";
     menuFolder.style.left = '-200%';
+  } else if (category === "high-level-folder") {
+    menuHighLevelFolders.style.display = "none";
+    menuHighLevelFolders.style.top = "-220%";
+    menuHighLevelFolders.style.left = '-220%';
   } else {
     menuFile.style.display = "block";
     menuFile.style.top = "-210%";
     menuFile.style.left = "-210%";
   }
-
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -554,46 +693,62 @@ addNewFolder.addEventListener("click", function(event) {
     var newFolderName = "New Folder"
     // show input box for name
 
-    prompt({
-      title: 'Adding a new folder...',
-      label: 'Enter a name for the new folder:',
-      value: "",
-      inputAttrs: {
-        type: 'text'
-      },
-      type: 'input'
-    })
-    .then((r) => {
-      if(r !== null && r!== "") {
-        newFolderName = r.trim()
-        var appendString = '';
-        // var folderID = '';
-        appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+ newFolderName +'</div></div>'
-        $(appendString).appendTo('#items');
+    bootbox.prompt({
+      title: "Adding a new folder...",
+      message: "Enter a name for the new folder: ",
+      centerVertical: true,
+      size: 'small',
+      inputType: 'text',
+      callback: function(result) {
 
-        /// update jsonObjGlobal
-        var currentPath = globalPath.value
-        var jsonPathArray = currentPath.split("/")
-        var filtered = jsonPathArray.filter(function (el) {
-          return el != "";
-        });
+        if(result !== null && result!== "") {
+          newFolderName = result.trim()
 
-        var myPath = getRecursivePath(filtered)
+          // check for duplicate or files with the same name
+          var duplicate = false
+          var itemDivElements = document.getElementById("items").children
+          for (var i=0;i<itemDivElements.length;i++) {
+            if (newFolderName === itemDivElements[i].innerText) {
+              duplicate = true
+              break
+            }
+          }
 
-        // update Json object with new folder created
-        var renamedNewFolder = newFolderName
-        myPath[renamedNewFolder] = {}
+          if (duplicate) {
+            bootbox.alert({
+              message: "Duplicate folder name: " + newFolderName,
+              centerVertical: true
+            })
+          } else {
+            var appendString = '';
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+ newFolderName +'</div></div>'
+            $(appendString).appendTo('#items');
 
-        listItems(myPath)
-        getInFolder()
+            /// update jsonObjGlobal
+            var currentPath = globalPath.value
+            var jsonPathArray = currentPath.split("/")
+            var filtered = jsonPathArray.filter(function (el) {
+              return el != "";
+            });
+
+            var myPath = getRecursivePath(filtered)
+
+            // update Json object with new folder created
+            var renamedNewFolder = newFolderName
+            myPath[renamedNewFolder] = {}
+
+            listItems(myPath)
+            getInFolder()
+          }
+        }
       }
     })
-
-    .catch(console.error);
   } else {
-      alert("New folders cannot be added at this level!")
-  }
-
+      bootbox.alert({
+        message: "New folders cannot be added at this level!",
+        centerVertical: true
+      })
+    }
 })
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -609,7 +764,7 @@ function populateJSONObjFolder(jsonObject, folderPath) {
         jsonObject[element] = {}
         populateJSONObjFolder(jsonObject[element], addedElement)
       } else if (statsObj.isFile()) {
-          jsonObject[element] = addedElement
+          jsonObject[element] = [addedElement, "", ""]
         }
     });
 }
@@ -644,14 +799,20 @@ function drop(ev) {
       }
     }
 
-    /// check for File, not allowed Folder drag and drop for now
+    /// check for File duplicate
     if (statsObj.isFile()) {
       if (globalPath.value === "/") {
         if (duplicate) {
-          alert('Duplicate file name: ' + itemName)
+          bootbox.alert({
+            message: "Duplicate file name: " + itemName,
+            centerVertical: true
+          })
         } else {
             if (!["dataset_description.xlsx", "submission.xlsx", "samples.xlsx", "subjects.xlsx", "README.txt"].includes(itemName)) {
-              alert("Only SPARC metadata files are allowed in the high-level dataset folder:\n\n- dataset_description.xslx/.csv/.json\n- submission.xslx/.csv/.json\n- subjects.xslx/.csv/.json\n- samples.xslx/.csv/.json\n- CHANGES.txt\n- README.txt")
+              bootbox.alert({
+                message: "Invalid file(s). Only SPARC metadata files are allowed in the high-level dataset folder.<br> <ul><li>dataset_description (.xslx/.csv/.json)</li><li>submission (.xslx/.csv/.json)</li><li>subjects (.xslx/.csv/.json)</li><li>samples (.xslx/.csv/.json)</li><li>CHANGES.txt</li><li>README.txt</li></ul>",
+                centerVertical: true
+              })
             } else {
               myPath[itemName] = [itemPath, "", "", false, false]
 
@@ -663,7 +824,13 @@ function drop(ev) {
             }
         }
       } else {
-          myPath[itemName][0] = itemPath
+        if (duplicate) {
+          bootbox.alert({
+            message: "Duplicate file name: " + itemName,
+            centerVertical: true
+          })
+        } else {
+          myPath[itemName] = [itemPath, "", ""]
 
           var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="folderContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
           $(appendString).appendTo(ev.target);
@@ -671,13 +838,20 @@ function drop(ev) {
           listItems(myPath)
           getInFolder()
         }
+      }
     } else if (statsObj.isDirectory()) {
       /// drop a folder
       if (globalPath.value === "/") {
-        alert("Other folders cannot be added to this level!")
+        bootbox.alert({
+          message: "Other non-SPARC folders cannot be added to this dataset level!",
+          centerVertical: true
+        })
       } else {
         if (duplicate) {
-          alert('Duplicate folder name: ' + itemName)
+          bootbox.alert({
+            message: 'Duplicate folder name: ' + itemName,
+            centerVertical: true
+          })
         } else {
           var currentPath = globalPath.value
           var jsonPathArray = currentPath.split("/")
@@ -870,7 +1044,10 @@ function getInFolder() {
       getInFolder()
 
     } else {
-        alert("Please click on a folder to explore!")
+      bootbox.alert({
+        message: "Please click on a folder to explore!",
+        centerVertical: true
+      })
     }
   })
 }
