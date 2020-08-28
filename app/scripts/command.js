@@ -404,6 +404,7 @@ function renameFolder(event1) {
               className: 'btn-success'
           }
       },
+      size: "small",
       value: nameWithoutExtension,
       centerVertical: true,
 
@@ -435,7 +436,6 @@ function renameFolder(event1) {
 
             listItems(myPath)
             getInFolder(myPath)
-            console.log(myPath)
           }
     }
   })
