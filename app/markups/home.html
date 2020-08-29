@@ -12,6 +12,24 @@
 <body>
     <div class="main-window">
 
+
+      <!-- Form for Add metadata/description sub-feature -->
+      <div class="form-content" style="display:none;">
+      <form class="form" role="form">
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="textarea-file-description" name="description"></textarea>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox"> Apply description to all files in this folder
+          </label>
+        </div>
+      </form>
+    </div>
+
+
+
         <ul class="menu-folder off">
           <li class="menu-item" id="folder-delete"><i class="far fa-trash-alt fa-fw"></i>Delete</li>
           <li class="menu-item" id="folder-rename"><i class="fas fa-edit fa-fw"></i>Rename</li>

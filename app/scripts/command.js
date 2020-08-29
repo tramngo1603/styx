@@ -148,7 +148,7 @@ function addFilesfunction(fileArray, currentLocation) {
             centerVertical: true
           })
         } else {
-          currentLocation[baseName] = [fileArray[i], "", "", false, false]
+          currentLocation[baseName] = [fileArray[i], "", ""]
           var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+baseName+'</div></div>'
 
           $('#items').html(appendString)
@@ -331,94 +331,70 @@ function editDesc(ev) {
     }],
     callback: function (result) {
       if (result==="metadata") {
-        bootbox.prompt({
-          title: "<h6>Enter additional metadata: </h6>",
-          centerVertical: true,
-          size: 'small',
+
+        bootbox.dialog({
+
+          message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='metadata'>Enter additional metadata below: </label>"+"<textarea style='min-height: 80px;margin-top: 10px' class='form-control' id='metadata'>"+"</textarea>"+"</div>"+ "<br>" + "<div class='checkbox'>"+"<label>"+"<input name='apply-all-metadata' type='checkbox'> Apply this metadata to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
+          title: "<h6>Adding additional metadata...</h6>",
           buttons: {
-            cancel: {
-                  label: '<i class="fa fa-times"></i> Cancel'
-              },
-            confirm: {
-              label: '<i class="fa fa-check"></i> Save',
-              className: 'btn-success',
-            }
-          },
-          inputType: 'textarea',
-          callback: function (r) {
-            if (r !== null) {
-              myPath[fileName][2] = r.trim()
-              bootbox.confirm({
-                message: "Would you like to add this additional metadata to all the files in this folder?",
-                buttons: {
-                    confirm: {
-                        label: 'Yes, apply to all',
-                        className: 'btn-success'
-                    },
-                    cancel: {
-                        label: 'No',
-                        className: 'btn-danger'
-                    }
-                },
-                centerVertical: true,
-                callback: function (confirm) {
-                  if (confirm) {
+              success: {
+                label: '<i class="fa fa-check"></i> Save',
+                className: "btn-success",
+                callback: function () {
+                  var metadata = $('#metadata').val();
+                  var applyToAllMetadataBoolean = $("input[name='apply-all-metadata']:checked").val()
+
+                  myPath[fileName][2] = metadata.trim()
+
+                  if (applyToAllMetadataBoolean==="on") {
                     for (var element in myPath) {
                       if (Array.isArray(myPath[element])) {
-                        myPath[element][2] = r.trim()
+                        myPath[element][2] = metadata.trim()
                       }
                     }
                   }
-                  console.log(myPath);
+                console.log(myPath)
                 }
-              })
-            }
-          }
+              },
+              cancel: {
+                label: 'Cancel',
+                className: "btn btn-default pull-left"
+              }
+            },
+        centerVertical: true,
       });
       } else if (result==="description"){
-        bootbox.prompt({
-          title: "<h6>Enter a description: </h6>",
-          inputType: 'textarea',
-          buttons: {
-            cancel: {
-                  label: '<i class="fa fa-times"></i> Cancel'
-              },
-            confirm: {
-              label: '<i class="fa fa-check"></i> Save',
-              className: 'btn-success',
-            }
-          },
-          centerVertical: true,
-          callback: function (r) {
-            if (r !== null) {
-              myPath[fileName][1] = r.trim()
-              bootbox.confirm({
-                message: "Would you like to add this description to all the files in this folder?",
-                buttons: {
-                    confirm: {
-                        label: 'Yes, apply to all',
-                        className: 'btn-success'
-                    },
-                    cancel: {
-                        label: 'No',
-                        className: 'btn-danger'
-                    }
-                },
-                centerVertical: true,
-                callback: function (confirm) {
-                  if (confirm) {
-                    for (var element in myPath) {
-                      if (Array.isArray(myPath[element])) {
-                        myPath[element][1] = r.trim()
+          bootbox.dialog({
+
+            message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='description'>Enter description below:</label> "+"<textarea style='min-height: 80px;margin-top: 10px;' class='form-control' id='description'>"+"</textarea>"+ "<br>" + "</div>"+"<div class='checkbox'>"+"<label>"+"<input name='apply-all-desc' type='checkbox'> Apply this description to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
+            title: "<h6>Adding a description...</h6>",
+            buttons: {
+                success: {
+                  label: '<i class="fa fa-check"></i> Save',
+                  className: "btn-success",
+                  callback: function () {
+                    var description = $('#description').val();
+                    var applyToAllDescBoolean = $("input[name='apply-all-desc']:checked").val()
+
+                    myPath[fileName][1] = description.trim()
+
+                    if (applyToAllDescBoolean==="on") {
+                      for (var element in myPath) {
+                        if (Array.isArray(myPath[element])) {
+                          myPath[element][1] = description.trim()
+                        }
                       }
                     }
-                  }
                   console.log(myPath)
+                  }
+                },
+                cancel: {
+                  label: "Cancel",
+                  className: "btn btn-default pull-left"
                 }
-              })
-            }
-          }
-      });
+              },
+          centerVertical: true,
+        });
       }
     }
   });
@@ -814,7 +790,7 @@ function drop(ev) {
                 centerVertical: true
               })
             } else {
-              myPath[itemName] = [itemPath, "", "", false, false]
+              myPath[itemName] = [itemPath, "", ""]
 
               var appendString = '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i class="far fa-file-alt"  oncontextmenu="fileContextMenu(this)" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+itemName+'</div></div>'
               $(appendString).appendTo(ev.target);
