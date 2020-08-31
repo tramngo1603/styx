@@ -331,10 +331,11 @@ function editDesc(ev) {
     }],
     callback: function (result) {
       if (result==="metadata") {
+        console.log(myPath[fileName][2])
 
         bootbox.dialog({
 
-          message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='metadata'>Enter additional metadata below: </label>"+"<textarea style='min-height: 80px;margin-top: 10px' class='form-control' id='metadata'>"+"</textarea>"+"</div>"+ "<br>" + "<div class='checkbox'>"+"<label>"+"<input name='apply-all-metadata' type='checkbox'> Apply this metadata to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
+          message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='metadata'>View/edit additional metadata below: </label>"+"<textarea style='min-height: 80px;margin-top: 10px;font-size: 13px !important' class='form-control' id='metadata'>"+myPath[fileName][2]+"</textarea>"+"</div>"+ "<br>" + "<div class='checkbox'>"+"<label>"+"<input name='apply-all-metadata' type='checkbox'> Apply this metadata to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
           title: "<h6>Adding additional metadata...</h6>",
           buttons: {
               success: {
@@ -361,19 +362,20 @@ function editDesc(ev) {
                 className: "btn btn-default pull-left"
               }
             },
+        // value: myPath[fileName][2],
         centerVertical: true,
       });
       } else if (result==="description"){
           bootbox.dialog({
 
-            message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='description'>Enter description below:</label> "+"<textarea style='min-height: 80px;margin-top: 10px;' class='form-control' id='description'>"+"</textarea>"+ "<br>" + "</div>"+"<div class='checkbox'>"+"<label>"+"<input name='apply-all-desc' type='checkbox'> Apply this description to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
+            message: "<div class='form-content'>" + "<form class='form' role='form'>" + "<div class='form-group>" + "<label for='description'>View/Edit your description below:</label> "+"<textarea style='min-height: 80px;margin-top: 10px;font-size: 13px !important' class='form-control' id='description'>"+myPath[fileName][1]+"</textarea>"+ "<br>" + "</div>"+"<div class='checkbox'>"+"<label>"+"<input name='apply-all-desc' type='checkbox'> Apply this description to all files in this folder</label> "+" </div> "+"</form>"+"</div>",
             title: "<h6>Adding a description...</h6>",
             buttons: {
                 success: {
                   label: '<i class="fa fa-check"></i> Save',
                   className: "btn-success",
                   callback: function () {
-                    var description = $('#description').val();
+                    var description = $("#description").val();
                     var applyToAllDescBoolean = $("input[name='apply-all-desc']:checked").val()
 
                     myPath[fileName][1] = description.trim()
@@ -393,6 +395,7 @@ function editDesc(ev) {
                   className: "btn btn-default pull-left"
                 }
               },
+          value: myPath[fileName][1],
           centerVertical: true,
         });
       }
