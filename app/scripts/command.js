@@ -39,7 +39,8 @@ var jsonObjGlobal = {
 }
 
 var homeDirectory = app.getPath('home')
-var progressPath = path.join(homeDirectory,"bexplorer", "Progress");
+var progressFile = "currentOrganization.json"
+var progressPath = path.join(homeDirectory, "bexplorer", "Progress");
 
 const globalPath = document.getElementById("input-global-path")
 const backButton = document.getElementById("button-back")
@@ -52,6 +53,7 @@ const fullNameValue = document.querySelector(".hoverFullName")
 const resetProgress = document.getElementById("clear-progress")
 const saveProgress = document.getElementById("save-progress")
 const importProgress = document.getElementById("import-progress")
+const homePathButton = document.getElementById("home-path")
 
 listItems(jsonObjGlobal)
 getInFolder()
@@ -120,6 +122,11 @@ backButton.addEventListener("click", function() {
     listItems(myPath)
     getInFolder()
   }
+})
+
+homePathButton.addEventListener("click", function() {
+  listItems(jsonObjGlobal)
+  globalPath.value = "/"
 })
 
 // Add folder button
@@ -302,7 +309,7 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
@@ -340,6 +347,9 @@ function getRecursivePath(filteredList) {
 
 function getInFolder() {
   $('.single-item').dblclick(function(){
+    console.log($('.single-item'))
+    console.log($(this))
+    // console.log(e)
     if($(this).children("h1").hasClass("blue")) {
       var folder = this.id
       var appendString = ''
