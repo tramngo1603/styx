@@ -39,7 +39,8 @@ var jsonObjGlobal = {
 }
 
 var homeDirectory = app.getPath('home')
-var progressPath = path.join(homeDirectory,"bexplorer", "Progress");
+var progressFile = "currentOrganization.json"
+var progressPath = path.join(homeDirectory, "bexplorer", "Progress");
 
 const globalPath = document.getElementById("input-global-path")
 const backButton = document.getElementById("button-back")
@@ -52,6 +53,7 @@ const fullNameValue = document.querySelector(".hoverFullName")
 const resetProgress = document.getElementById("clear-progress")
 const saveProgress = document.getElementById("save-progress")
 const importProgress = document.getElementById("import-progress")
+const homePathButton = document.getElementById("home-path")
 
 listItems(jsonObjGlobal)
 getInFolder()
@@ -304,7 +306,7 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
@@ -342,6 +344,9 @@ function getRecursivePath(filteredList) {
 
 function getInFolder() {
   $('.single-item').dblclick(function(){
+    console.log($('.single-item'))
+    console.log($(this))
+    // console.log(e)
     if($(this).children("h1").hasClass("blue")) {
       var folder = this.id
       var appendString = ''
@@ -363,6 +368,91 @@ function getInFolder() {
       // reconstruct folders and files (child elements after emptying the Div)
       listItems(myPath)
       getInFolder()
+      hideMenu("folder")
+      hideMenu("high-level-folder")
     }
   })
 }
+
+/// import progress
+importProgress.addEventListener("click", function() {
+  var progressData = parseJson(path.join(progressPath,progressFile))
+  if (progressData !== {} || progressData !== undefined) {
+    var bootboxDialog = bootbox.dialog({
+      title: 'Loading previous file organization',
+      message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+    });
+    bootboxDialog.init(function(){
+      setTimeout(function(){
+        jsonObjGlobal = progressData
+        listItems(jsonObjGlobal)
+        getInFolder()
+        bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully imported!");
+    }, 2000);
+    })
+
+  }
+
+  // bootbox.prompt({
+  //     title: "Importing file organization",
+  //     message: "<p>Please choose an existing file organization to continue working on: </p>",
+  //     inputType: "radio",
+  //     inputOptions: inputOpt,
+  //     centerVertical: true,
+  //     callback: function(val) {
+  //       if (val !== null) {
+  //         //file written successfully
+  //           bootbox.alert({
+  //             message: "<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully imported!",
+  //             centerVertical: true,
+  //             size: "small"
+  //           })
+  //
+  //         }
+  //       }
+  // })
+})
+
+// save progress
+saveProgress.addEventListener("click", function() {
+  bootbox.confirm({
+    title: "Saving file organization",
+    message: "<p>Please confirm to save this file organization: </p>",
+    centerVertical: true,
+    size: "small",
+    callback: function(result) {
+      if (result) {
+        var progressData = fs.writeFileSync(path.join(progressPath,progressFile), JSON.stringify(jsonObjGlobal))
+        bootbox.alert({
+          message: "<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully saved file organization.",
+          centerVertical: true,
+          size: "small"
+        })
+      }
+      }
+  })
+})
+
+
+/// reset progress
+resetProgress.addEventListener("click", function() {
+  bootbox.confirm({
+    title: "Clearing progress",
+    message: "<p>Are you sure you want to clear the current file organization?</p>",
+    centerVertical: true,
+    callback: function(r) {
+      if (r!==null) {
+        jsonObjGlobal = {
+          "code": {},
+          "derivative": {},
+          "primary": {},
+          "source": {},
+          "docs": {},
+          "protocols": {}
+        }
+        listItems(jsonObjGlobal)
+        getInFolder()
+      }
+    }
+  })
+})

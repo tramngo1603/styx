@@ -44,6 +44,7 @@ button[disabled]{
 .main-window {
     /* display: grid;
     grid-template-columns: 150px auto; */
+    /* background-color: #f0f8ff; */
     width: 100%;
     height: calc(100vh - 70px);
     padding: 20px;
@@ -89,32 +90,122 @@ button[disabled]{
     overflow: scroll;
 }
 
-.menu-folder {
-    min-width: 120px;
-    height: 50px;
-    background-color: #f4f4f4;
-    color: #333;
-    list-style: none;
-    position: absolute;
-    padding: 0 0;
-    text-align: left;
-    border-radius: 0.25rem;
-    cursor: pointer;
-}
-
-
-.menu-file {
-  min-width: 180px;
-  height: 70px;
-  background-color: #f4f4f4;
+.menu {
+  background-color: #fff;
   color: #333;
   list-style: none;
   position: absolute;
-  padding: 0 0;
+  padding: 6px 0;
   text-align: left;
-  border-radius: 0.25rem;
+  border-radius: 5px;
   cursor: pointer;
+  word-wrap: break-word;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-right: 4px
 }
+
+.menu.reg-folder {
+    min-width: 110px;
+    height: 70px;
+}
+
+.menu.reg-folder li {
+  padding: 3px 10px;
+  background-color: #fff;
+  font-size: 13px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
+
+/* .menu.reg-folder li:hover{
+  background-color: #fffff
+} */
+
+.menu.file {
+  min-width: 180px;
+  height: 70px;
+}
+
+.menu.file li {
+  padding: 3px 10px;
+  background-color: #fff;
+  color: black;
+  font-size: 13px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
+
+.menu.file li:hover{
+  background-color: #F0F0F0 ;
+}
+
+.menu.reg-folder li:hover{
+  background-color: #F0F0F0 ;
+}
+
+.menu.high-level-folder li:hover{
+  background-color: #F0F0F0;
+
+}
+
+.menu.high-level-folder.off {
+  display: none;
+  top: -200%;
+  left: -200%;
+  /* margin-bottom: 0; */
+}
+
+.menu.high-level-folder {
+  min-width: 120px;
+  height: 100px;
+}
+
+.menu.high-level-folder li {
+  padding: 3px 10px;
+  background-color: #fff;
+  font-size: 13px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+
+}
+
+/* .menu.high-level-folder li:hover{
+  background-color: #fffff;
+} */
+
+.menu.reg-folder.off{
+    display: none;
+    top: -200%;
+    left: -200%;
+}
+
+.menu.file.off{
+    display: none;
+    top: -210%;
+    left: -210%;
+}
+
+.menu.file li {
+  min-width: 180px;
+  background-color: #fff
+}
+/*
+.menu-item {
+    min-width: 85px;
+    padding: 2px 6px;
+    clear:both;
+    height: auto;
+    font-size: 13px;
+    font-weight:400;
+    color:#212529;
+    white-space: nowrap;
+    text-align: left;
+    background-color: rgb(255, 255, 255);
+    border:0;
+    z-index: 100;
+} */
+
+.menu-item:focus, .menu-item:hover{color:#16181b;text-decoration:none;background-color:#D3D3D3}
+.menu-item.active, .menu-item:active{color:#fff;text-decoration:none;background-color:#007bff}
+
 
 .modal-content textarea{
   font-size: 11px !important;
@@ -176,62 +267,6 @@ button[disabled]{
     font-size: 11px;
 }
 
-.menu-high-level-folder.off {
-  display: none;
-  top: -200%;
-  left: -200%;
-  margin-bottom: 0;
-}
-
-.menu-high-level-folder {
-  min-width: 120px;
-  height: 50px;
-  background-color: #f4f4f4;
-  color: #333;
-  list-style: none;
-  position: absolute;
-  padding: 0 0;
-  text-align: left;
-  border-radius: 0.25rem;
-  cursor: pointer;
-}
-
-.menu-folder.off{
-    display: none;
-    top: -200%;
-    left: -200%;
-    margin-bottom: 0;
-}
-
-.menu-file.off{
-    display: none;
-    top: -210%;
-    left: -210%;
-}
-
-.menu-file.menu-item {
-  min-width: 180px;
-}
-
-.menu-item {
-    min-width: 85px;
-    padding: 2px 6px;
-    clear:both;
-    height: auto;
-    font-size: 13px;
-    font-weight:400;
-    color:#212529;
-    white-space: nowrap;
-    text-align: left;
-    background-color: rgb(255, 255, 255);
-    border:0;
-    z-index: 100;
-}
-
-.menu-item:focus, .menu-item:hover{color:#16181b;text-decoration:none;background-color:#D3D3D3}
-.menu-item.active, .menu-item:active{color:#fff;text-decoration:none;background-color:#007bff}
-
-
 .single-item {
     display: inline-block;
     text-align: center;
@@ -240,7 +275,14 @@ button[disabled]{
 
     margin-right: 10px;
     margin-top: 10px;
-    /* margin-bottom: 10px; */
+    /* -webkit-box-reflect: below 2px -webkit-gradient(linear, right top, right bottom, from(transparent), color-stop(60%, transparent), to(rgba(255, 255, 255, 0.1))); */
+    /* -webkit-box-reflect: below 1px -webkit-gradient(linear, right top, right bottom, from(transparent), to(rgba(255, 255, 255, 0.4))); */
+}
+
+.single-item:active {
+  /* transform: scale(1.1, 1.1); */
+  transform: translate(0, -5px);
+  -webkit-transform: all 3s;
 }
 
 .single-item:hover {
@@ -259,18 +301,18 @@ i.far.fa-file-alt {
 i.fas.fa-folder {
   font-size: 55px !important;
 }
-
+/*
 #new-folder:hover {
   background-color: #F0F0F0 !important;
-}
-
+} */
+/*
 #btnGroupDrop1:hover {
   background-color: #F0F0F0 !important;
 }
 
 #btnGroupDrop2:hover {
   background-color: #F0F0F0 !important;
-}
+} */
 
 .dropdown-item:hover {
   background-color: #F0F0F0 !important;
@@ -299,12 +341,12 @@ i.fas.fa-folder {
     line-height: 1.5;
 }
 .blue {
-    color:#FFA500;
+    color:rgb(255,165,0,0.8);
 }
-
+/*
 .file {
     color: #D8D8D8;
-}
+} */
 
 /* h1.folder.file {
   height: 35px
@@ -326,3 +368,221 @@ i.fas.fa-folder {
     font-size: 18px;
     -webkit-user-select: none;
 }
+
+
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .3s;
+  transition: .3s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: hsl(190, 60%, 36%);
+}
+
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(22px);
+  -ms-transform: translateX(22px);
+  transform: translateX(22px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 22px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.btn.btn-success:hover {
+    border: 5px solid #3b5998;
+    box-shadow: 0 0 5px #3b5998;
+    transition: all 0.5s ease;
+  }
+
+.button-back {
+  color: #258193;
+  background-color: #fff;
+  border: 1px solid #258193;
+  border-radius: 50%;
+  /* padding: 15px 18px 30px 15px; */
+  cursor: pointer;
+  height:35px;
+  width:35px;
+  font-size:15px;
+  box-shadow: 0 0 2px #999;
+  background-position: center;
+  transition: background 0.8s;
+}
+
+.button-back:hover {
+  background:#258193 radial-gradient(circle, transparent 1%, #258193 1%) center/15000%;
+  color: white;
+}
+.button-back:active {
+  background-color:#292d3e;
+  background-size: 100%;
+  transition: background 0s;
+    transform: translateY(-4px);
+}
+.button-back:focus {
+  outline: none;
+}
+
+.myButton {
+  margin-right: 3px;
+  font-size: 13px;
+  color: #258193;
+  background-color: #fff;
+  border: 1px solid #258193;
+  border-radius: 5px;
+  /* padding: 15px 18px 30px 15px; */
+  cursor: pointer;
+  height:35px;
+  width:110px;
+  /* font-size:15px; */
+  box-shadow: 0 0 2px #999;
+  background-position: center;
+  transition: background 0.8s;
+}
+
+.myButton:hover {
+  background: #258193 radial-gradient(circle, transparent 1%, #258193 1%) center/15000%;
+  color: white;
+  box-shadow: 0 0 5px #3b5998;
+  transition: all 0.5s ease;
+}
+.myButton:active {
+  background-color:#292d3e;
+  background-size: 100%;
+  transition: background 0s;
+  transform: translateY(-3px);
+}
+.myButton:focus {
+  outline: none;
+}
+
+
+
+
+
+
+/* file and folder */
+.myFile {
+    background:#eee;
+    background:-moz-linear-gradient(top, #ddd 0, #eee 15%, #fff 40%, #fff 70%, #eee 100%);
+    background:-webkit-linear-gradient(top, #ddd 0, #eee 15%, #fff 40%, #fff 70%, #eee 100%);
+    border:1px solid #ccc;
+    -moz-border-radius:3px 15px 3px 3px;
+    -webkit-border-radius:3px 15px 3px 3px;
+    border-radius:3px 15px 3px 3px;
+    -moz-box-shadow:inset rgba(255,255,255,0.8) 0 1px 1px;
+    -webkit-box-shadow:inset rgba(255,255,255,0.8) 0 1px 1px;
+    box-shadow:inset rgba(255,255,255,0.8) 0 1px 1px;
+    display: inline-block;
+    width: 35px;
+    height: 40px;
+    position:relative;
+    text-indent:-9999em;
+    margin-bottom: -8px;
+    margin-top: 12px;
+  }
+  .myFile:before {
+    content: '';
+    position: absolute;
+    right:0;
+    width: 10px;
+    height: 10px;
+    background:#ccc;
+    background:-moz-linear-gradient(45deg, #fff 0,  #eee 50%, #ccc 100%);
+    background:-webkit-linear-gradient(45deg, #fff 0,  #eee 50%, #ccc 100%);
+    box-shadow:rgba(0,0,0,0.05) -1px 1px 1px, inset white 0 0 1px;
+    border-bottom:1px solid #ccc;
+    border-left:1px solid #ccc;
+    -moz-border-radius:0 14px 0 0;
+    -webkit-border-radius:0 14px 0 0;
+    border-radius:0 10px 0 0;
+  }
+
+  .myFile:after {
+    content:"";
+    display:block;
+    position:absolute;
+    left:0;
+    top:0;
+    width: 40%;
+    margin: 10px 20% 0;
+    background:#ccc;
+    background:-moz-linear-gradient(top, #ccc 0, #ccc 20%, #fff 20%, #fff 40%, #ccc 40%, #ccc 60%, #fff 60%, #fff 80%, #ccc 80%, #ccc 100%);
+    background:-webkit-linear-gradient(top, #ccc 0, #ccc 20%, #fff 20%, #fff 40%, #ccc 40%, #ccc 60%, #fff 60%, #fff 80%, #ccc 80%, #ccc 100%);
+    height: 8px;
+  }
+
+
+  .myFolder {
+    width: 30px;
+    height: 20px;
+    display: inline-block;
+    margin: auto;
+    position: relative;
+    background-color: #708090;
+    border-radius: 0 3px 3px 3px;
+    /*box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.59);*/
+    margin-bottom: -8px;
+    margin-top: 12px;
+  }
+
+  .myFolder:before {
+    content: '';
+    width: 50%;
+    height: 0.2em;
+    border-radius: 0 20px 0 0;
+    background-color: #708090;
+    position: absolute;
+    top: -0.2em;
+    left: 0px;
+}
+
+/*
+#home-path:hover {
+  transform: translateY(-2px);
+box-shadow: 0 0 2px #999;
+} */
