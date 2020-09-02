@@ -124,8 +124,6 @@ backButton.addEventListener("click", function() {
   }
 })
 
-})
-
 // Add folder button
 addNewFolder.addEventListener("click", function(event) {
   event.preventDefault();
@@ -306,7 +304,7 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile"><i oncontextmenu="fileContextMenu(this)" class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="myFile" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
@@ -325,7 +323,7 @@ function loadFileFolder(myPath) {
 
   for (var item in sortedObj) {
     if (typeof sortedObj[item] === "string") {
-      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="far fa-file-alt" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="myFile" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
     }
     else {
       appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'

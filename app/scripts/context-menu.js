@@ -53,8 +53,6 @@ function folderContextMenu(event) {
         renameFolder(event)
       } else if ($(this).attr('id') === "folder-delete") {
         delFolder(event)
-      } else if ($(this).attr('id') === "tooltip-folders") {
-        showTooltips(event)
       }
      // Hide it AFTER the action was triggered
      hideMenu("folder")
@@ -82,6 +80,7 @@ function folderContextMenu(event) {
 
 //////// options for files
 function fileContextMenu(event) {
+  console.log(event)
   $(".menu.file li").unbind().click(function(){
     if ($(this).attr('id') === "file-rename") {
         renameFolder(event)
@@ -103,7 +102,7 @@ $(document).bind("contextmenu", function (event) {
     /// check for high level folders
     var highLevelFolderBool = false
     var folderName = event.target.parentElement.parentElement.innerText
-    if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(folderName)) {
+    if (["code", "derivative", "docs", "source", "primary", "protocols"].includes(folderName)) {
       highLevelFolderBool = true
     }
     // Show the rightcontextmenu for each clicked
@@ -116,7 +115,7 @@ $(document).bind("contextmenu", function (event) {
         showmenu(event, "folder")
         hideMenu("file")
       }
-    } else if (event.target.classList.value === "far fa-file-alt") {
+    } else if (event.target.classList.value === "myFile") {
       showmenu(event, "file")
       hideMenu("folder")
       hideMenu("high-level-folder")
@@ -131,7 +130,7 @@ $(document).bind("contextmenu", function (event) {
 
 $(document).bind("click", function (event) {
   if (event.target.classList.value !== "fas fa-folder" &&
-      event.target.classList.value !== "far fa-file-alt") {
+      event.target.classList.value !== "myFile") {
         hideMenu("folder")
         hideMenu("high-level-folder")
         hideMenu("file")
@@ -265,7 +264,7 @@ function renameFolder(event1) {
     highLevelFolderBool = false
   }
 
-  if (event1.classList.value === "far fa-file-alt") {
+  if (event1.classList.value === "myFile") {
     promptVar = "file";
     type = "file";
   } else if (event1.classList.value === "fas fa-folder") {
@@ -382,7 +381,7 @@ function delFolder(ev) {
     highLevelFolderBool = false
   }
 
-  if (ev.classList.value === "far fa-file-alt") {
+  if (ev.classList.value === "myFile") {
     promptVar = "file";
   } else if (ev.classList.value === "fas fa-folder") {
     promptVar = "folder";
@@ -420,9 +419,18 @@ function delFolder(ev) {
 //// option to show tool-tips for high-level folders
 function showTooltips(ev) {
   var folderName = ev.parentElement.parentElement.innerText;
-  var options = {
-    "type": "info",
-    "message": highLevelFolderToolTip[folderName]
-  }
-  dialog.showMessageBox(options)
+  // var options = {
+  //   "type": "info",
+  //   "message": highLevelFolderToolTip[folderName]
+  // }
+  bootbox.alert({
+    message: highLevelFolderToolTip[folderName],
+    button: {
+      ok: {
+        className: 'btn-primary'
+      }
+    },
+    centerVertical: true
+  })
+  // dialog.showMessageBox(options)
 }
