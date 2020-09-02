@@ -122,6 +122,8 @@ backButton.addEventListener("click", function() {
   }
 })
 
+})
+
 // Add folder button
 addNewFolder.addEventListener("click", function(event) {
   event.preventDefault();
@@ -361,7 +363,6 @@ function getInFolder() {
       // reconstruct folders and files (child elements after emptying the Div)
       listItems(myPath)
       getInFolder()
-
     }
   })
 }
