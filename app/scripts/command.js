@@ -342,9 +342,7 @@ function getRecursivePath(filteredList) {
 
 function getInFolder() {
   $('.single-item').dblclick(function(){
-    console.log($('.single-item'))
-    console.log($(this))
-    // console.log(e)
+
     if($(this).children("h1").hasClass("blue")) {
       var folder = this.id
       var appendString = ''
@@ -453,4 +451,72 @@ resetProgress.addEventListener("click", function() {
       }
     }
   })
+})
+
+function loadingDialog(text1, text2, func) {
+  var bootboxDialog = bootbox.dialog({
+    // title: 'Adding manifest files',
+    message: '<p><i class="fa fa-spin fa-spinner"></i> '+text1+'</p>',
+  })
+  bootboxDialog.init(function(){
+    setTimeout(function(){
+      func;
+      bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>"+text2+"");
+  }, 2000);
+  })
+}
+
+/// if users choose to include manifest files
+/// this function will first add manifest files to the UI
+/// and update the JSON object with files "manifest": ["auto-generated manifest"]
+/// TODO: not allow context menu for manifest files with value === array (lenght=1)
+function updateManifestLabel(jsonObject) {
+  /// first, add manifest files to UI
+  var elements = Object.keys(jsonObject)
+  for (var key of elements) {
+      if (typeof jsonObject[key] === "object" && !(Array.isArray(jsonObject[key]))) {
+        if (Object.keys(jsonObject[key]).length !== 0) {
+          jsonObject[key]["manifest.xlsx"] = ["auto-generated"]
+          /// if this folder is not empty, then recursively add manifest file
+          updateManifestLabel(jsonObject[key])
+        }
+      }
+    }
+  listItems(jsonObject)
+  getInFolder()
+}
+
+function myHelper() {
+  listItems(jsonObjGlobal)
+  getInFolder()
+}
+
+
+document.getElementById("generate-manifest").addEventListener("click", function() {
+  console.log(jsonObjGlobal)
+
+  var jsonObj = jsonObjGlobal
+  jsonObjGlobal = jsonObjGlobal
+
+  console.log(document.getElementById("generate-manifest").checked)
+  if (document.getElementById("generate-manifest").checked === true) {
+
+    var bootboxDialog = bootbox.dialog({
+      // title: 'Adding manifest files',
+      message: '<p><i class="fa fa-spin fa-spinner"></i>Adding manifest files...</p>'
+    })
+    bootboxDialog.init(function(){
+      updateManifestLabel(jsonObj)
+      bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully added!<br><br>Note: manifest files are not added to empty folders.");
+    })
+  }  else {
+      var bootboxDialog = bootbox.dialog({
+        // title: 'Adding manifest files',
+        message: '<p><i class="fa fa-spin fa-spinner"></i>Removing manifest files...</p>'
+      })
+      bootboxDialog.init(function(){
+        myHelper()
+        bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully removed!");
+      })
+    }
 })
