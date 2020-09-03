@@ -387,8 +387,21 @@ function getInFolder() {
   })
 }
 
+/// check if an array contains another array
+function checkSubArrayBool(parentArray, childArray) {
+  var bool = true
+  for (var element of childArray) {
+    if (!parentArray.includes(element)) {
+      bool = false
+      break
+    }
+  }
+  return bool
+}
+
 /// import progress
 importProgress.addEventListener("click", function() {
+  globalPath.value = "/"
 
   var filePath = dialog.showOpenDialogSync(null, {
     defaultPath: os.homedir(),
@@ -401,13 +414,22 @@ importProgress.addEventListener("click", function() {
   if (filePath !== undefined) {
     var progressData = fs.readFileSync(filePath[0])
     var content = JSON.parse(progressData.toString())
-    jsonObjGlobal = content
+    var contentKeys = Object.keys(content)
+    if (checkSubArrayBool(contentKeys, highLevelFolders)) {
+      jsonObjGlobal = content
+    } else {
+      bootbox.alert({
+        message: "<p>Please import a valid file organization!</p>",
+        centerVertical: true
+      })
+      return
+    }
 
     var bootboxDialog = bootbox.dialog({
       message: '<p><i class="fa fa-spin fa-spinner"></i>Importing file organization...</p>'
     })
     bootboxDialog.init(function(){
-      listItems(content)
+      listItems(jsonObjGlobal)
       getInFolder()
       bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully loaded!");
     })
@@ -440,6 +462,7 @@ resetProgress.addEventListener("click", function() {
     centerVertical: true,
     callback: function(r) {
       if (r!==null) {
+        globalPath.value = "/"
         jsonObjGlobal = {
           "code": {},
           "derivative": {},
@@ -457,7 +480,6 @@ resetProgress.addEventListener("click", function() {
 
 function loadingDialog(text1, text2, func) {
   var bootboxDialog = bootbox.dialog({
-    // title: 'Adding manifest files',
     message: '<p><i class="fa fa-spin fa-spinner"></i> '+text1+'</p>',
   })
   bootboxDialog.init(function(){
@@ -495,25 +517,21 @@ function myHelper() {
 
 
 document.getElementById("generate-manifest").addEventListener("click", function() {
-  console.log(jsonObjGlobal)
 
-  var jsonObj = jsonObjGlobal
-  jsonObjGlobal = jsonObjGlobal
+  globalPath.value = "/"
 
-  console.log(document.getElementById("generate-manifest").checked)
-  if (document.getElementById("generate-manifest").checked === true) {
+  if (document.getElementById("generate-manifest").checked) {
 
     var bootboxDialog = bootbox.dialog({
       // title: 'Adding manifest files',
       message: '<p><i class="fa fa-spin fa-spinner"></i>Adding manifest files...</p>'
     })
     bootboxDialog.init(function(){
-      updateManifestLabel(jsonObj)
+      updateManifestLabel(copiedObject)
       bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully added!<br><br>Note: manifest files are not added to empty folders.");
     })
   }  else {
       var bootboxDialog = bootbox.dialog({
-        // title: 'Adding manifest files',
         message: '<p><i class="fa fa-spin fa-spinner"></i>Removing manifest files...</p>'
       })
       bootboxDialog.init(function(){
