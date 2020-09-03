@@ -12,6 +12,8 @@ const app = require('electron').remote.app;
 var backFolder = []
 var forwardFolder =[]
 
+var highLevelFolders = ["code", "derivative", "docs", "source", "primary", "protocols"]
+
 var highLevelFolderToolTip = {
   "code": "code: This folder contains all the source code used in the study (e.g., Python, MATLAB, etc.)",
   "derivative": "derivative: This folder contains data files derived from raw data (e.g., processed image stacks that are annotated via the MBF tools, segmentation files, smoothed overlays of current and voltage that demonstrate a particular effect, etc.)",
@@ -262,7 +264,7 @@ function hoverForFullName(ev) {
 
 // If the document is clicked somewhere
 document.addEventListener('onmouseover', function(e){
-  if (e.target.classList.value !== "far fa-file-alt") {
+  if (e.target.classList.value !== "myFile") {
     hideFullPath()
   } else {
     hoverForPath(e)
@@ -316,8 +318,14 @@ function listItems(jsonObj) {
             appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile '+extension+'" oncontextmenu="fileContextMenu(this)" style="margin-bottom: 10px""></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
-            folderID = item
-            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 oncontextmenu="folderContextMenu(this)" class="myFol"></h1><div class="folder_desc">'+item+'</div></div>'
+            folderID = item;
+            var emptyFolder = "";
+            if (! highLevelFolders.includes(item)) {
+              if (JSON.stringify(sortedObj[item]) === '{}') {
+                emptyFolder = " empty"
+              }
+            }
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 oncontextmenu="folderContextMenu(this)" class="myFol'+emptyFolder+'"></h1><div class="folder_desc">'+item+'</div></div>'
           }
         }
 

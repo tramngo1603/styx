@@ -80,7 +80,6 @@ function folderContextMenu(event) {
 
 //////// options for files
 function fileContextMenu(event) {
-  console.log(event)
   $(".menu.file li").unbind().click(function(){
     if ($(this).attr('id') === "file-rename") {
         renameFolder(event)
@@ -101,13 +100,13 @@ $(document).bind("contextmenu", function (event) {
     event.preventDefault();
     /// check for high level folders
     var highLevelFolderBool = false
-    var folderName = event.target.parentElement.parentElement.innerText
-    if (["code", "derivative", "docs", "source", "primary", "protocols"].includes(folderName)) {
+    var folderName = event.target.parentElement.innerText
+    if (highLevelFolders.includes(folderName)) {
       highLevelFolderBool = true
     }
     // Show the rightcontextmenu for each clicked
     // category (high-level folders, regular sub-folders, and files)
-    if (event.target.classList.value === "fas fa-folder") {
+    if (event.target.classList[0] === "myFol") {
       if (highLevelFolderBool) {
         showmenu(event, "high-level-folder")
         hideMenu("file")
@@ -115,7 +114,7 @@ $(document).bind("contextmenu", function (event) {
         showmenu(event, "folder")
         hideMenu("file")
       }
-    } else if (event.target.classList.value === "myFile") {
+    } else if (event.target.classList[0] === "myFile") {
       showmenu(event, "file")
       hideMenu("folder")
       hideMenu("high-level-folder")
@@ -129,8 +128,8 @@ $(document).bind("contextmenu", function (event) {
 });
 
 $(document).bind("click", function (event) {
-  if (event.target.classList.value !== "fas fa-folder" &&
-      event.target.classList.value !== "myFile") {
+  if (event.target.classList[0] !== "myFol" &&
+      event.target.classList[0] !== "myFile") {
         hideMenu("folder")
         hideMenu("high-level-folder")
         hideMenu("file")
@@ -232,7 +231,7 @@ function triggerManageDescriptionPrompt(fileName, filePath) {
 ///// Option to manage description for files
 function manageDesc(ev) {
 
-  var fileName = ev.parentElement.parentElement.innerText
+  var fileName = ev.parentElement.innerText
 
   /// get current location of files in JSON object
   var filtered = getGlobalPath()
@@ -253,21 +252,21 @@ function renameFolder(event1) {
   var promptVar;
   var type;
   var newName;
-  var currentName = event1.parentElement.parentElement.innerText
+  var currentName = event1.parentElement.innerText
   var nameWithoutExtension;
   var highLevelFolderBool;
   var duplicate = false
 
-  if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(currentName)) {
+  if (highLevelFolders.includes(currentName)) {
     highLevelFolderBool = true
   } else {
     highLevelFolderBool = false
   }
 
-  if (event1.classList.value === "myFile") {
+  if (event1.classList[0] === "myFile") {
     promptVar = "file";
     type = "file";
-  } else if (event1.classList.value === "fas fa-folder") {
+  } else if (event1.classList[0] === "myFol") {
     promptVar = "folder";
     type = "folder";
   }
@@ -325,6 +324,7 @@ function renameFolder(event1) {
                   message:"Invalid name for a metadata file! Required names for metadata files are: <b>'dataset_description', 'submission', 'samples', 'subjects', 'README', 'CHANGES'</b>. Please try renaming your file again.",
                   centerVertical: true
                 })
+                return
               }
             }
 
@@ -375,7 +375,7 @@ function delFolder(ev) {
   var highLevelFolderBool;
 
   /// check for high-level folders (if so, folders cannot be deleted from the current UI)
-  if (["code", "derivative", "docs", "source", "primary", "protocol"].includes(itemToDelete)) {
+  if (highLevelFolders.includes(itemToDelete)) {
     highLevelFolderBool = true
   } else {
     highLevelFolderBool = false
@@ -419,10 +419,6 @@ function delFolder(ev) {
 //// option to show tool-tips for high-level folders
 function showTooltips(ev) {
   var folderName = ev.parentElement.parentElement.innerText;
-  // var options = {
-  //   "type": "info",
-  //   "message": highLevelFolderToolTip[folderName]
-  // }
   bootbox.alert({
     message: highLevelFolderToolTip[folderName],
     button: {

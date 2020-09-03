@@ -293,6 +293,17 @@ button[disabled]{
   margin-right: 10px
 }
 
+.myFol.empty:before{
+  content: '';
+  background: url('../assets/folder.png');
+  opacity: 0.5;
+  background-size: cover;
+  position:absolute;
+  width:60px;
+  height:60px;
+  margin-right: 10px
+}
+
 .dropdown-item:hover {
   background-color: #F0F0F0 !important;
 }
