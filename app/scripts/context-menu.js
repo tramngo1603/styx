@@ -57,6 +57,7 @@ function folderContextMenu(event) {
      // Hide it AFTER the action was triggered
      hideMenu("folder")
      hideMenu("high-level-folder")
+     hideFullName()
  });
 
  /// options for high-level folders
@@ -71,11 +72,13 @@ function folderContextMenu(event) {
     // Hide it AFTER the action was triggered
     hideMenu("folder")
     hideMenu("high-level-folder")
+    hideFullName()
 
 });
 /// hide both menus after an option is clicked
  hideMenu("folder")
  hideMenu("high-level-folder")
+ hideFullName()
 }
 
 //////// options for files
@@ -124,6 +127,7 @@ $(document).bind("contextmenu", function (event) {
       hideMenu("high-level-folder")
       hideMenu("file")
       hideFullPath()
+      hideFullName()
     }
 });
 
@@ -134,6 +138,7 @@ $(document).bind("click", function (event) {
         hideMenu("high-level-folder")
         hideMenu("file")
         hideFullPath()
+        hideFullName()
       }
 })
 
@@ -418,7 +423,7 @@ function delFolder(ev) {
 
 //// option to show tool-tips for high-level folders
 function showTooltips(ev) {
-  var folderName = ev.parentElement.parentElement.innerText;
+  var folderName = ev.parentElement.innerText;
   bootbox.alert({
     message: highLevelFolderToolTip[folderName],
     button: {

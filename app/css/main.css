@@ -265,13 +265,14 @@ button[disabled]{
 
 .single-item:active {
   /* transform: scale(1.1, 1.1); */
-  transform: translate(0, -5px);
+  /* transform: translate(0, -10px); */
   -webkit-transform: all 3s;
 }
 
 .single-item:hover {
   border: #c0c0c0;
-  background-color: #F5F5F5
+  background-color: #F5F5F5;
+  transform: translateY(-6px);
 }
 
 .single-item:hover + #myspan {
@@ -292,6 +293,7 @@ button[disabled]{
   height:60px;
   margin-right: 10px
 }
+
 
 .myFol.empty:before{
   content: '';
@@ -413,12 +415,12 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
-
+/*
 .btn.btn-success:hover {
     border: 5px solid #3b5998;
     box-shadow: 0 0 5px #3b5998;
     transition: all 0.5s ease;
-  }
+  } */
 
 .button-back {
   color: #258193;

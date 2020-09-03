@@ -36,7 +36,7 @@ var jsonObjGlobal = {
   "docs": {},
   "protocols": {},
   // any file's value is a list [full_path, added description, added metadata]
-  "submission.xlsx": ["C:/mypath/folder1/sub-folder-1/submission.csv", "This is my current description.", "This is my sample metadata for this file."],
+  "submission.csv": ["C:/mypath/folder1/sub-folder-1/submission.csv", "This is my current description.", "This is my sample metadata for this file."],
   "dataset_description.xlsx": ["C:/mypath/folder1/sub-folder-1/dataset_description.xlsx", "This is my current description.", "This is my sample metadata for this file."]
 }
 
@@ -311,10 +311,15 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            var extension = sliceStringByValue(sortedObj[item][0],  ".")
-            if (!["docx", "doc", "pdf", "txt", "jpg", "xlsx", "xls", "csv", "png"].includes(extension)) {
-              extension = "other"
+            // not the auto-generated manifest
+            if (sortedObj[item].length !== 1) {
+              var extension = sliceStringByValue(sortedObj[item][0],  ".")
+              if (!["docx", "doc", "pdf", "txt", "jpg", "xlsx", "xls", "csv", "png"].includes(extension)) {
+                extension = "other"
               }
+            } else {
+              extension = "other"
+            }
             appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile '+extension+'" oncontextmenu="fileContextMenu(this)" style="margin-bottom: 10px""></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
@@ -338,14 +343,32 @@ function loadFileFolder(myPath) {
 
   var sortedObj = sortObjByKeys(myPath)
 
+
   for (var item in sortedObj) {
-    if (typeof sortedObj[item] === "string") {
-      appendString = appendString + '<li><div class="single-item"><h1 class="folder file"><i class="myFile" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+    if (Array.isArray(sortedObj[item])) {
+      // not the auto-generated manifest
+      if (sortedObj[item].length !== 1) {
+        var extension = sliceStringByValue(sortedObj[item][0],  ".")
+        if (!["docx", "doc", "pdf", "txt", "jpg", "xlsx", "xls", "csv", "png"].includes(extension)) {
+          extension = "other"
+        }
+      } else {
+        extension = "other"
+      }
+      appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile '+extension+'" oncontextmenu="fileContextMenu(this)" style="margin-bottom: 10px""></h1><div class="folder_desc">'+item+'</div></div>'
     }
     else {
-      appendString = appendString + '<li><div class="single-item"><h1 class="folder blue"><i class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div></li>'
+      folderID = item;
+      var emptyFolder = "";
+      if (! highLevelFolders.includes(item)) {
+        if (JSON.stringify(sortedObj[item]) === '{}') {
+          emptyFolder = " empty"
+        }
+      }
+      appendString = appendString + '<div class="single-item" onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 oncontextmenu="folderContextMenu(this)" class="myFol'+emptyFolder+'"></h1><div class="folder_desc">'+item+'</div></div>'
     }
   }
+
   return appendString
 }
 
@@ -506,8 +529,6 @@ function updateManifestLabel(jsonObject) {
         }
       }
     }
-  listItems(jsonObject)
-  getInFolder()
 }
 
 function myHelper() {
