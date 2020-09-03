@@ -34,7 +34,7 @@ var jsonObjGlobal = {
   "docs": {},
   "protocols": {},
   // any file's value is a list [full_path, added description, added metadata]
-  "submission.xlsx": ["C:/mypath/folder1/sub-folder-1/submission.xlsx", "This is my current description.", "This is my sample metadata for this file."],
+  "submission.xlsx": ["C:/mypath/folder1/sub-folder-1/submission.csv", "This is my current description.", "This is my sample metadata for this file."],
   "dataset_description.xlsx": ["C:/mypath/folder1/sub-folder-1/dataset_description.xlsx", "This is my current description.", "This is my sample metadata for this file."]
 }
 
@@ -295,6 +295,11 @@ function sortObjByKeys(object) {
   return orderedObject
 }
 
+function sliceStringByValue(string, endingValue) {
+  var newString = string.slice(string.indexOf(endingValue) + 1)
+  return newString
+}
+
 function listItems(jsonObj) {
 
         var appendString = ''
@@ -304,11 +309,15 @@ function listItems(jsonObj) {
 
         for (var item in sortedObj) {
           if (Array.isArray(sortedObj[item])) {
-            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="folder file"><i oncontextmenu="fileContextMenu(this)" class="myFile" style="margin-bottom:10px"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            var extension = sliceStringByValue(sortedObj[item][0],  ".")
+            if (!["docx", "doc", "pdf", "txt", "jpg", "xlsx", "xls", "csv", "png"].includes(extension)) {
+              extension = "other"
+              }
+            appendString = appendString + '<div class="single-item" onmouseover="hoverForPath(this)" onmouseleave="hideFullPath()"><h1 class="myFile '+extension+'" oncontextmenu="fileContextMenu(this)" style="margin-bottom: 10px""></h1><div class="folder_desc">'+item+'</div></div>'
           }
           else {
             folderID = item
-            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 class="folder blue"><i oncontextmenu="folderContextMenu(this)" class="fas fa-folder"></i></h1><div class="folder_desc">'+item+'</div></div>'
+            appendString = appendString + '<div class="single-item"  onmouseover="hoverForFullName(this)" onmouseleave="hideFullName()" id=' + folderID + '><h1 oncontextmenu="folderContextMenu(this)" class="myFol"></h1><div class="folder_desc">'+item+'</div></div>'
           }
         }
 
@@ -343,7 +352,7 @@ function getRecursivePath(filteredList) {
 function getInFolder() {
   $('.single-item').dblclick(function(){
 
-    if($(this).children("h1").hasClass("blue")) {
+    if($(this).children("h1").hasClass("myFol")) {
       var folder = this.id
       var appendString = ''
       globalPath.value = globalPath.value + folder + "/"
@@ -372,61 +381,46 @@ function getInFolder() {
 
 /// import progress
 importProgress.addEventListener("click", function() {
-  var progressData = parseJson(path.join(progressPath,progressFile))
-  if (progressData !== {} || progressData !== undefined) {
+
+  var filePath = dialog.showOpenDialogSync(null, {
+    defaultPath: os.homedir(),
+    filters: [
+      {name: 'JSON', extensions: ['json']}
+    ],
+    properties: ['openFile']
+  });
+
+  if (filePath !== undefined) {
+    var progressData = fs.readFileSync(filePath[0])
+    var content = JSON.parse(progressData.toString())
+    jsonObjGlobal = content
+
     var bootboxDialog = bootbox.dialog({
-      title: 'Loading previous file organization',
-      message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
-    });
-    bootboxDialog.init(function(){
-      setTimeout(function(){
-        jsonObjGlobal = progressData
-        listItems(jsonObjGlobal)
-        getInFolder()
-        bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully imported!");
-    }, 2000);
+      message: '<p><i class="fa fa-spin fa-spinner"></i>Importing file organization...</p>'
     })
-
+    bootboxDialog.init(function(){
+      listItems(content)
+      getInFolder()
+      bootboxDialog.find('.bootbox-body').html("<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully loaded!");
+    })
   }
-
-  // bootbox.prompt({
-  //     title: "Importing file organization",
-  //     message: "<p>Please choose an existing file organization to continue working on: </p>",
-  //     inputType: "radio",
-  //     inputOptions: inputOpt,
-  //     centerVertical: true,
-  //     callback: function(val) {
-  //       if (val !== null) {
-  //         //file written successfully
-  //           bootbox.alert({
-  //             message: "<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully imported!",
-  //             centerVertical: true,
-  //             size: "small"
-  //           })
-  //
-  //         }
-  //       }
-  // })
 })
 
 // save progress
 saveProgress.addEventListener("click", function() {
-  bootbox.confirm({
-    title: "Saving file organization",
-    message: "<p>Please confirm to save this file organization: </p>",
-    centerVertical: true,
-    size: "small",
-    callback: function(result) {
-      if (result) {
-        var progressData = fs.writeFileSync(path.join(progressPath,progressFile), JSON.stringify(jsonObjGlobal))
-        bootbox.alert({
-          message: "<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully saved file organization.",
-          centerVertical: true,
-          size: "small"
-        })
-      }
-      }
-  })
+  var filePath = dialog.showSaveDialogSync(null, {
+    defaultPath: os.homedir(),
+    filters: [
+      {name: 'JSON', extensions: ['json']}
+    ]
+  });
+  if (filePath !== undefined) {
+    fs.writeFileSync(filePath, JSON.stringify(jsonObjGlobal))
+    bootbox.alert({
+      message: "<i style='margin-right: 5px !important' class='fas fa-check'></i>Successfully saved file organization.",
+      centerVertical: true
+    })
+  }
 })
 
 
